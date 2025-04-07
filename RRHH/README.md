@@ -2,7 +2,7 @@ Claro, podemos construir el sistema de forma incremental, empezando por un solo 
 
 A continuación te propongo un plan de implementación incremental y un pequeño ejemplo paso a paso con AdonisJS + MySQL para el rol de “mesero”. Así, iremos creando migraciones y modelos básicos, luego endpoints, y finalmente un simple flujo en el frontend para ver cómo se vería.
 
-Plan de implementación incremental
+Plan de implementación incremental para RRHH
 Definir la migración y modelo para “TrainingPath”
 
 Primero, crearemos una tabla training_paths en la base de datos. Cada fila representará una “Ruta de capacitación” para un determinado rol (inicialmente, “mesero”).
