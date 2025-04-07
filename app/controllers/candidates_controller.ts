@@ -141,7 +141,7 @@ export default class CandidatesController {
         name: nombre,
         whatsapp,
         email,
-        position: puesto,
+        positionId: puesto,
         cv_path: `storage/uploads/${finalFileName}`,
 
         reference1Company: ref1Company,
@@ -242,7 +242,7 @@ export default class CandidatesController {
           name: candidate.name,
           email: candidate.email,
           phone: candidate.whatsapp,
-          position: candidate.position,
+          positionId: candidate.positionId,
           candidateId: candidate.id,
           company_id: companyId,
           userId: newUser.id, // <-- link al user
@@ -305,7 +305,7 @@ export default class CandidatesController {
         name: candidate.name,
         email: candidate.email,
         phone: candidate.whatsapp,
-        position: candidate.position,
+        positionId: candidate.positionId,
         candidateId: candidate.id,
         company_id: companyId,
       })

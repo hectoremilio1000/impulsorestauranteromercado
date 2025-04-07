@@ -23,8 +23,8 @@ export default class Candidate extends BaseModel {
   @column()
   declare comments: string | null
 
-  @column()
-  declare position: string
+  @column({ columnName: 'position_id' })
+  declare positionId: number
 
   // 1) Tu nueva columna
   @column()
