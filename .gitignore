@@ -12,6 +12,8 @@ tmp
 .env.production
 .envhector
 .env.checar
+.env.main
+.env.dev
 
 # Frontend assets compiled code
 public/assets

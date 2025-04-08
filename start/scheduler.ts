@@ -1,3 +1,4 @@
+import env from '#start/env'
 import SchedulerService from '#services/scheduler_service'
 import HelloJob from '../app/jobs/hello_job.js'
 
@@ -20,4 +21,9 @@ scheduler.addJob({
 })
 
 // Actually start a scheduler for all jobs
-scheduler.scheduleAllJobs()
+if (env.get('SCHEDULER_ENABLED') === 'true') {
+  scheduler.scheduleAllJobs()
+  console.log('Scheduler arrancado (SCHEDULER_ENABLED=true)')
+} else {
+  console.log('Scheduler no arrancado (SCHEDULER_ENABLED=false)')
+}
