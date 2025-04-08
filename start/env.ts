@@ -19,8 +19,6 @@ export default await Env.create(new URL('../', import.meta.url), {
   LOG_LEVEL: Env.schema.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']),
   FRONTEND_URL: Env.schema.string(),
 
-  FRONTEND_URL: Env.schema.string(),
-
   /*
   |----------------------------------------------------------
   | Variables for configuring database connection
