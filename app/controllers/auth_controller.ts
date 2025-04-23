@@ -16,6 +16,9 @@ export default class AuthController {
         .preload('subscription') // <--- Asegúrate de precargar la relación
         .orderBy('id', 'asc')
 
+      console.log('DB_HOST =>', env.get('DB_HOST'))
+      console.log('DB_PORT =>', env.get('DB_PORT'))
+      console.log('DB_DATABASE =>', env.get('DB_DATABASE'))
       return response.status(200).json({
         status: 'success',
         code: 200,

@@ -14,22 +14,22 @@ export default class Company extends BaseModel {
   declare name: string
 
   @column()
-  declare email: string
+  declare email: string | null
 
   @column()
-  declare logo: string
+  declare logo: string | null
 
   @column()
-  declare website: string
+  declare website: string | null
 
   @column()
-  declare phone_contact: string
+  declare phone_contact: string | null
 
   @column({ columnName: 'user_id' })
   declare user_id: number
 
   @column()
-  declare created_by: number
+  declare created_by: number | null
 
   // Relación autorreferencial para obtener el rol
   @belongsTo(() => User, {
