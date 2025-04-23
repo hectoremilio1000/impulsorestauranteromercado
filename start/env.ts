@@ -3,20 +3,10 @@
  */
 import { Env } from '@adonisjs/core/env'
 
-/**
- * 1. Detectamos NODE_ENV (por defecto, 'development')
- */
+/* 1. Detectamos NODE_ENV (por defecto, 'development') */
 const nodeEnv = process.env.NODE_ENV || 'development'
 
-/**
- * 2. Elegimos el nombre de archivo .env (solo para referencia
- *    y para silenciar noUnusedLocals con el prefijo “_”).
- *    AdonisJS cargará automáticamente:
- *      .env.[NODE_ENV].local
- *      .env.local
- *      .env.[NODE_ENV]
- *      .env
- */
+/* 2. Elegimos el archivo .env según NODE_ENV */
 let envFile: string
 switch (nodeEnv) {
   case 'dev':
@@ -32,21 +22,15 @@ switch (nodeEnv) {
     envFile = '.env'
 }
 
-/**
- * 3. Raíz de la app (un nivel arriba de /start)
- */
+/* 3. Ruta raíz de la app (un nivel arriba de /start) */
 const appRoot = new URL('..', import.meta.url)
 
-/**
- * 4. Decimos a Adonis dónde buscar los archivos .env.
- *    Debe ser un **directorio**, no un archivo; por eso
- *    usamos solo la ruta de la carpeta.
- */
+/* 4. Indicamos a Adonis dónde buscar los .env ⇒ directorio  */
 process.env.ENV_PATH = appRoot.pathname
+/* 4-bis. Exponemos el nombre del archivo para que envFile se “use” */
+process.env.ENV_FILENAME = envFile // <-- evita TS6133
 
-/**
- * 5. Creamos la instancia de Env con nuestras validaciones
- */
+/* 5. Creamos la instancia de Env con validaciones */
 export default await Env.create(appRoot, {
   NODE_ENV: Env.schema.enum(['development', 'dev', 'main', 'production', 'test'] as const),
 
