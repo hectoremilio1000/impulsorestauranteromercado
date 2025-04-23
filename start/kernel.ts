@@ -1,12 +1,10 @@
-/*
-|--------------------------------------------------------------------------
-| HTTP kernel file
-|--------------------------------------------------------------------------
-|
-| The HTTP kernel file is used to register the middleware with the server
-| or the router.
-|
-*/
+// start/kernel.ts
+import Env from '#start/env' // ← tu instancia
+import logger from '@adonisjs/core/services/logger' // ← default export
+
+logger.info(
+  `📦  Conectando a BD "${Env.get('DB_DATABASE')}" en ${Env.get('DB_HOST')}:${Env.get('DB_PORT')}  (NODE_ENV=${Env.get('NODE_ENV')})`
+)
 
 import router from '@adonisjs/core/services/router'
 import server from '@adonisjs/core/services/server'
