@@ -13,6 +13,11 @@ import app from '@adonisjs/core/services/app'
 
 const AuthController = () => import('#controllers/auth_controller')
 import { middleware } from './kernel.js'
+const RrhhBarRecipesController = () => import('#controllers/rrhh_bar_recipes_controller')
+const EmployeeChecklistsController = () =>
+  import('#controllers/rrhh_employee_checklists_controller')
+
+const RrhhChecklistsController = () => import('#controllers/rrhh_checklists_controller')
 const PositionsController = () => import('#controllers/positions_controller')
 const EmployeeTrainingPathsController = () =>
   import('#controllers/training_employee_paths_controller')
@@ -528,6 +533,45 @@ router.get('/api/storage/uploads/requests-web/*', ({ request, response }) => {
 
   // Devolvemos el archivo
   return response.download(absolutePath)
+})
+
+// CRUD de plantillas
+router
+  .group(() => {
+    router.get('/rrhh-checklists', [RrhhChecklistsController, 'index'])
+    router.get('/rrhh-checklists/:id', [RrhhChecklistsController, 'show'])
+    router.post('/rrhh-checklists', [RrhhChecklistsController, 'store'])
+    router.put('/rrhh-checklists/:id', [RrhhChecklistsController, 'update'])
+    router.delete('/rrhh-checklists/:id', [RrhhChecklistsController, 'destroy'])
+  })
+  .prefix('/api')
+  .middleware([middleware.auth({ guards: ['api'] })])
+
+// Endpoints de uso diario (empleado)
+router
+  .group(() => {
+    router.get('/checklists/daily', [EmployeeChecklistsController, 'daily'])
+    router.post('/checklists/complete', [EmployeeChecklistsController, 'complete'])
+  })
+  .prefix('/api')
+  .middleware([middleware.auth({ guards: ['api'] })])
+
+router
+  .group(() => {
+    router.get('/bar-recipes', [RrhhBarRecipesController, 'index'])
+    router.get('/bar-recipes/:id', [RrhhBarRecipesController, 'show'])
+    router.post('/bar-recipes', [RrhhBarRecipesController, 'store'])
+    router.put('/bar-recipes/:id', [RrhhBarRecipesController, 'update'])
+    router.delete('/bar-recipes/:id', [RrhhBarRecipesController, 'destroy'])
+  })
+  .prefix('/api')
+  .middleware([middleware.auth({ guards: ['api'] })]) // protege si quieres
+
+// Servir fotos:
+router.get('/api/storage/uploads/bar_recipes/*', ({ request, response }) => {
+  const filePath = request.param('*').join('/')
+  const absolute = app.makePath('storage/uploads/bar_recipes', filePath)
+  return response.download(absolute)
 })
 
 // MÓDULO DE MARKETING
