@@ -99,7 +99,7 @@ export default class RrhhBarRecipesController {
   }
 
   // PUT /api/bar-recipes/:id (solo básicos)
-  public async update({ params, request, response }: HttpContext) {
+  public async update({ params, request }: HttpContext) {
     const recipe = await BarRecipe.findOrFail(params.id)
     recipe.merge(request.only(['name', 'procedure', 'version', 'is_active']))
     await recipe.save()
