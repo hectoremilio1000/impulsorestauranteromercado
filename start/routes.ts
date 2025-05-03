@@ -81,9 +81,7 @@ const PATH_TRAVERSAL_REGEX = /(?:^|[\\/])\.\.(?:[\\/]|$)/
 // import AuthController from '#controllers/auth_controller'
 
 router.get('/api', async () => {
-  return {
-    hello: 'world',
-  }
+  return { hello: 'world' }
 })
 
 //prueba
