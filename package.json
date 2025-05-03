@@ -8,6 +8,7 @@
     "dev": "node ace serve --hmr",
     "dev:dev": "cross-env NODE_ENV=dev  node ace serve --hmr",
     "dev:main": "cross-env NODE_ENV=main node ace serve --hmr",
+    "dev:mobile": "cross-env ENV_PATH=.env.mobile HOST=0.0.0.0 PORT=4000 node ace serve --watch --no-hmr",
     "start": "node build/bin/server.js",
     "build": "node ace build && cp -r public build/public",
     "migrate": "node ace migration:run",
@@ -68,6 +69,7 @@
     "@adonisjs/core": "^6.12.1",
     "@adonisjs/cors": "^2.2.1",
     "@adonisjs/drive": "^2.3.0",
+    "@adonisjs/health": "^2.0.0",
     "@adonisjs/lock": "^1.1.1",
     "@adonisjs/lucid": "^21.6.0",
     "@adonisjs/mail": "^9.2.2",
@@ -77,9 +79,10 @@
     "@googleapis/docs": "^3.3.0",
     "@vinejs/vine": "^2.1.0",
     "adonis5-scheduler": "^2.1.1",
-    "axios": "^1.7.9",
+    "axios": "^1.9.0",
     "cron": "^3.5.0",
     "crypto": "^1.0.1",
+    "expo-secure-store": "^14.0.1",
     "google-ads-api": "^17.1.0-rest-beta",
     "googleapis": "^144.0.0",
     "knex": "^3.1.0",
@@ -111,5 +114,6 @@
       "strtok3": "8.0.1"
     }
   },
-  "prettier": "@adonisjs/prettier-config"
+  "prettier": "@adonisjs/prettier-config",
+  "packageManager": "yarn@1.22.21+sha512.ca75da26c00327d26267ce33536e5790f18ebd53266796fbb664d2a4a5116308042dd8ee7003b276a20eace7d3c5561c3577bdd71bcb67071187af124779620a"
 }
