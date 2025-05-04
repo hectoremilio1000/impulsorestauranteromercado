@@ -1,10 +1,10 @@
 [phases.setup]
 node_version = "20.11.1"
 
-# 👇 Sustituimos el install automático
+# 👇  NUEVO: instalamos todo y permitimos scripts
 [phases.install]
-cmds = ["npm ci"]      # sin --omit=dev
+cmds = ["npm ci --ignore-scripts=false --omit=dev=false"]
 
-# 👇 Opcional – si quieres dejar claro el build
+# (opcional) deja claro el build, pero no es imprescindible
 [phases.build]
 cmds = ["npm run build"]
