@@ -1,10 +1,9 @@
 [phases.setup]
 node_version = "20.11.1"
 
-# 👇  NUEVO: instalamos todo y permitimos scripts
 [phases.install]
-cmds = ["npm ci --ignore-scripts=false --omit=dev=false"]
+# ⬇️  Usa NODE_ENV=development en lugar del flag --omit
+cmds = ["NODE_ENV=development npm ci"]
 
-# (opcional) deja claro el build, pero no es imprescindible
 [phases.build]
 cmds = ["npm run build"]
