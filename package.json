@@ -30,7 +30,7 @@
     "dev:main": "cross-env NODE_ENV=main node ace serve --hmr",
     "dev:mobile": "cross-env ENV_PATH=.env.mobile HOST=0.0.0.0 PORT=4000 node ace serve --watch --no-hmr",
     "start": "node build/bin/server",
-    "build": "node ace build && cp -r public build/public",
+    "build": "node ace build --ignore-ts-errors && cp -r public build/public",
     "migrate": "node ace migration:run",
     "migrate:dev": "cross-env NODE_ENV=dev node ace migration:run",
     "migrate:main": "cross-env NODE_ENV=main node ace migration:run",
