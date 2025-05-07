@@ -29,5 +29,16 @@
       "#contracts/*": ["contracts/*"]
     }
   },
-  "include": ["app", "config", "start", "providers", "contracts", "database", "commands", "tests"]
+  "include": [
+    "app",
+    "config",
+    "start",
+    "providers",
+    "contracts",
+    "database",
+    "commands",
+    "tests",
+    "**/*.ts"
+  ],
+  "exclude": ["build"]
 }
