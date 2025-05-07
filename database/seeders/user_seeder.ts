@@ -1,8 +1,8 @@
 // database/seeders/UserSeeder.ts
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import hash from '@adonisjs/core/services/hash'
-import User from '#models/user'
-import Role from '#models/role'
+import Role from '../../app/models/role.js'
+import User from '../../app/models/user.js'
 
 export default class UserSeeder extends BaseSeeder {
   public static developmentOnly = false // se corre en cualquier entorno

@@ -1,9 +1,0 @@
-[phases.setup]
-node_version = "20.11.1"
-
-[phases.install]
-# ⬇️  Usa NODE_ENV=development en lugar del flag --omit
-cmds = ["NODE_ENV=development npm ci"]
-
-[phases.build]
-cmds = ["npm run build"]

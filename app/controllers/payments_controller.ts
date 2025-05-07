@@ -1,11 +1,11 @@
 // app/Controllers/Http/PaymentsController.ts
 
-import env from '#start/env'
 import type { HttpContext } from '@adonisjs/core/http'
 import { MercadoPagoConfig, Payment, PreApproval, Preference } from 'mercadopago'
 import { DateTime } from 'luxon'
-import Transaction from '#models/transaction'
-import Subscription from '#models/subscription'
+import env from '#start/env'
+import Subscription from '#app/models/subscription'
+import Transaction from '#app/models/transaction'
 
 // (Opcional) Si usas DB para suscripciones y transacciones
 // import Subscription from 'App/Models/Subscription'

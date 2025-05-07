@@ -1,6 +1,6 @@
 // database/seeders/position_seeder.ts
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
-import Position from '#models/position'
+import Position from '../../app/models/position.js'
 
 export default class extends BaseSeeder {
   public async run() {

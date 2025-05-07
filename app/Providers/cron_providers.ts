@@ -1,7 +1,7 @@
 import { ApplicationService } from '@adonisjs/core/types'
 import cron from 'node-cron'
 import { DateTime } from 'luxon'
-import Subscription from '#models/subscription'
+import Subscription from '../models/subscription.js'
 
 export default class CronProvider {
   constructor(protected app: ApplicationService) {}

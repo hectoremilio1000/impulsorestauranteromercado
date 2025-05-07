@@ -1,9 +1,8 @@
-// app/Controllers/Http/EmployeeChecklistsController.ts
-import Employee from '#models/employee'
-import RrhhChecklistCompletion from '#models/rrhh_checklist_completion'
 import { DateTime } from 'luxon'
 import { HttpContext } from '@adonisjs/core/http'
-import RrhhChecklist from '#models/rrhh_checklist'
+import Employee from '#app/models/employee'
+import RrhhChecklist from '#app/models/rrhh_checklist'
+import RrhhChecklistCompletion from '#app/models/rrhh_checklist_completion'
 
 export default class EmployeeChecklistsController {
   /**

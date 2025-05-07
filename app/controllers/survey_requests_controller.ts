@@ -1,8 +1,8 @@
 // file: app/Controllers/Http/SurveyRequestsController.ts
+import Survey from '#app/models/survey'
+import SurveyQuestion from '#app/models/survey_question'
+import SurveyRequest from '#app/models/survey_request'
 import type { HttpContext } from '@adonisjs/core/http'
-import Survey from '#models/survey'
-import SurveyQuestion from '#models/survey_question'
-import SurveyRequest from '#models/survey_request'
 
 /**
  * Maneja las solicitudes de encuestas (survey_requests).

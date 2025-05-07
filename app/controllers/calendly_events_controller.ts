@@ -1,5 +1,5 @@
-import UsersCalendly from '#models/user_calendly'
-import env from '#start/env'
+import UsersCalendly from '#models/user_calendly.js'
+import env from '#start/env.js'
 import type { HttpContext } from '@adonisjs/core/http'
 import axios from 'axios'
 
@@ -23,6 +23,7 @@ export default class CalendlyEventsController {
         })
       }
 
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       let { access_token, refresh_token, calendly_uid } = userData
 
       // Verificar si el token es válido
@@ -58,6 +59,7 @@ export default class CalendlyEventsController {
       }
 
       // Realizar la solicitud para obtener los tipos de eventos
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       const { count = 10, page_token } = request.qs()
       let queryParams = [`count=${count}`]
 
@@ -105,6 +107,7 @@ export default class CalendlyEventsController {
         })
       }
 
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       let { access_token, refresh_token } = userData
 
       // Verificar si el token es válido

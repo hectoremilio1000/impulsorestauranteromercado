@@ -22,8 +22,5 @@ export default class TestTiktokAdsController {
         error: error.message,
       })
     }
-
-    const userId = auth?.user?.id
-    console.log(userId)
   }
 }

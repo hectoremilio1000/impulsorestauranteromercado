@@ -2,7 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import env from '#start/env'
 import { google } from 'googleapis'
 import { GoogleAdsApi } from 'google-ads-api'
-import { randomBytes } from 'crypto'
+import { randomBytes } from 'node:crypto'
 
 export default class TestGoogleAdsController {
   /**

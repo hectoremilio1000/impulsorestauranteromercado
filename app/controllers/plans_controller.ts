@@ -1,5 +1,5 @@
-import Plan from '#models/plan'
-import PlansModule from '#models/plans_module'
+import Plan from '#app/models/plan'
+import PlansModule from '#app/models/plans_module'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class PlansController {
@@ -81,7 +81,7 @@ export default class PlansController {
     try {
       // Verificar autenticación
       await auth.check()
-      const userId = auth.user?.id
+      const userId = auth.user.id
       if (!userId) {
         return {
           status: 'error',

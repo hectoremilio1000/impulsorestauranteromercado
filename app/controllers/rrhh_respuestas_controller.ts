@@ -1,5 +1,5 @@
-import RrhhPregunta from '#models/rrhh_pregunta'
-import RrhhRespuesta from '#models/rrhh_respuesta'
+import RrhhPregunta from '#app/models/rrhh_pregunta'
+import RrhhRespuesta from '#app/models/rrhh_respuesta'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class RrhhRespuestasController {
