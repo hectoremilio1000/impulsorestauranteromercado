@@ -1,6 +1,6 @@
-import TrainingPath from '#models/training_path'
-import TrainingModule from '#models/training_module'
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
+import TrainingPath from '../../app/models/training_path.js'
+import TrainingModule from '../../app/models/training_module.js'
 
 export default class TrainingSeeder extends BaseSeeder {
   public static environment = ['development', 'testing'] // Opcional: limitar a entornos

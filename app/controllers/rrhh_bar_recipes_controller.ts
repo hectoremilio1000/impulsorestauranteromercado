@@ -1,10 +1,11 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import BarRecipe from '#models/rrhh_bar_recipe'
-import BarRecipeIngredient from '#models/rrhh_bar_recipe_ingredient'
-import BarSubRecipe from '#models/rrhh_bar_sub_recipe'
-import BarSubRecipeIngredient from '#models/rrhh_bar_sub_recipe_ingredient'
+
 import { cuid } from '@adonisjs/core/helpers'
 import app from '@adonisjs/core/services/app'
+import BarRecipe from '../models/rrhh_bar_recipe.js'
+import BarRecipeIngredient from '../models/rrhh_bar_recipe_ingredient.js'
+import BarSubRecipe from '../models/rrhh_bar_sub_recipe.js'
+import BarSubRecipeIngredient from '../models/rrhh_bar_sub_recipe_ingredient.js'
 
 export default class RrhhBarRecipesController {
   // GET /api/bar-recipes

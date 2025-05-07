@@ -1,8 +1,10 @@
+import UsersCalendly from '#models/user_calendly.js'
+import env from '#start/env'
+
 import type { HttpContext } from '@adonisjs/core/http'
 import axios from 'axios'
-import env from '#start/env'
-import UserCalendly from '#models/user_calendly'
-import { randomBytes } from 'crypto'
+
+import { randomBytes } from 'node:crypto'
 
 export default class AuthCalendliesController {
   async status({ auth, response, request }: HttpContext) {
@@ -12,7 +14,7 @@ export default class AuthCalendliesController {
       const { companyId } = request.qs()
 
       // Verificar si el usuario tiene un token de Calendly
-      const calendlyUser = await UserCalendly.query()
+      const calendlyUser = await UsersCalendly.query()
         .where('user_id', user.id)
         .andWhere('company_id', companyId)
         .first()
@@ -88,18 +90,19 @@ export default class AuthCalendliesController {
         }
       )
 
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       const { access_token, refresh_token } = data
 
       const userInfo = await axios.get(`${env.get('CALENDLY_API_BASE_URL')}/users/me`, {
         headers: { Authorization: `Bearer ${access_token}` },
       })
 
-      const veryUser = await UserCalendly.query()
+      const veryUser = await UsersCalendly.query()
         .where('calendly_uid', userInfo.data.resource.uri)
         .first()
 
       if (!veryUser) {
-        await UserCalendly.create({
+        await UsersCalendly.create({
           calendly_uid: userInfo.data.resource.uri,
           access_token,
           refresh_token,

@@ -1,12 +1,13 @@
 import type { HttpContext } from '@adonisjs/core/http'
 
-import Prospect from '#models/prospect'
+import Prospect from '#models/prospect.js'
 import app from '@adonisjs/core/services/app'
 import mail from '@adonisjs/mail/services/main'
-import env from '#start/env'
+
 import OpenAI from 'openai'
-import Recommendation from '#models/recommendation'
-import Response from '#models/response' // <-- Asegúrate de que esté importado
+import Recommendation from '#models/recommendation.js'
+import Response from '#models/response.js' // <-- Asegúrate de que esté importado
+import env from '#start/env'
 
 export default class ProspectsController {
   public async index({}: HttpContext) {

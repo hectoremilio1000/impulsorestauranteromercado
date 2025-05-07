@@ -1,7 +1,7 @@
 // file: app/Controllers/Http/RrhhResultadosController.ts
 
-import RrhhRespuesta from '#models/rrhh_respuesta'
-import RrhhResultado from '#models/rrhh_resultado'
+import RrhhRespuesta from '#app/models/rrhh_respuesta'
+import RrhhResultado from '#app/models/rrhh_resultado'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class RrhhResultadosController {

@@ -1,11 +1,11 @@
-import User from '#models/user'
-import { loginValidator, registerValidator } from '#validators/auth'
 import type { HttpContext } from '@adonisjs/core/http'
 import Mail from '@adonisjs/mail/services/main'
 import { v4 as uuidv4 } from 'uuid'
 
+import Employee from '#app/models/employee'
+import User from '#app/models/user'
 import env from '#start/env'
-import Employee from '#models/employee'
+import { loginValidator, registerValidator } from '#app/validators/auth'
 
 export default class AuthController {
   public async index({ response }: HttpContext) {

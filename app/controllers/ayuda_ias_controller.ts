@@ -1,7 +1,8 @@
 // file: app/Controllers/Http/AyudaIAController.ts
 
+import Recommendation from '#models/recommendation.js'
 import type { HttpContext } from '@adonisjs/core/http'
-import Recommendation from '#models/recommendation'
+
 import db from '@adonisjs/lucid/services/db'
 
 export default class AyudaIAController {

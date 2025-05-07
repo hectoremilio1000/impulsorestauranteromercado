@@ -1,9 +1,9 @@
-import Subscription from '#models/subscription'
+import Module from '#app/models/module'
+import Plan from '#app/models/plan'
+import PlanChange from '#app/models/plan_change'
+import Subscription from '#app/models/subscription'
 import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
-import Plan from '#models/plan'
-import Module from '#models/module'
-import PlanChange from '#models/plan_change' // <--- Importa tu modelo PlanChange
 
 export default class SubscriptionsController {
   // GET /api/subscriptions
@@ -130,6 +130,7 @@ export default class SubscriptionsController {
     try {
       const subscription = await Subscription.findOrFail(params.id)
 
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       const { plan_id, modules_ids, coaching_included, coaching_used, status } = request.only([
         'plan_id',
         'modules_ids',

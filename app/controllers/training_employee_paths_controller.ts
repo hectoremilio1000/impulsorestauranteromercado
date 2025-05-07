@@ -1,6 +1,6 @@
 // app/Controllers/Http/EmployeeTrainingPathsController.ts
 
-import EmployeeTrainingPath from '#models/training_employee_path'
+import EmployeeTrainingPath from '#app/models/training_employee_path'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class EmployeeTrainingPathsController {
@@ -10,6 +10,7 @@ export default class EmployeeTrainingPathsController {
    */
   public async assign({ request, response }: HttpContext) {
     try {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       const { employee_id, training_path_id } = request.only(['employee_id', 'training_path_id'])
 
       // Crea la relación con estado "not_started" por defecto
@@ -60,6 +61,7 @@ export default class EmployeeTrainingPathsController {
 
   public async updateStatus({ request, response }: HttpContext) {
     try {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       const { etp_id, newStatus } = request.only(['etp_id', 'newStatus'])
       // etp_id => ID del row de employee_training_paths
       // newStatus => "in_progress" | "completed" etc.
