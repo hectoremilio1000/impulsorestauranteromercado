@@ -1,12 +1,20 @@
 /**
  * start/env.ts
  */
-import { Env } from '@adonisjs/core/env'
 
-/* 1. Detectamos NODE_ENV (por defecto, 'development') */
+import { Env } from '@adonisjs/core/env'
+import { fileURLToPath } from 'node:url'
+import { dirname, resolve } from 'node:path'
+
+/* 1. Convertimos la URL base en una ruta absoluta */
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const appRootPath = resolve(__dirname, '..') // esto es un string
+
+/* 2. Detectamos NODE_ENV o usamos 'development' por defecto */
 const nodeEnv = process.env.NODE_ENV || 'development'
 
-/* 2. Elegimos el archivo .env según NODE_ENV */
+/* 3. Elegimos el archivo .env correspondiente */
 let envFile: string
 switch (nodeEnv) {
   case 'dev':
@@ -22,16 +30,12 @@ switch (nodeEnv) {
     envFile = '.env'
 }
 
-/* 3. Ruta raíz de la app (un nivel arriba de /start) */
-const appRoot = new URL('..', import.meta.url)
+/* 4. Configuramos el path del archivo .env */
+process.env.ENV_PATH = appRootPath
+process.env.ENV_FILENAME = envFile
 
-/* 4. Indicamos a Adonis dónde buscar los .env ⇒ directorio  */
-process.env.ENV_PATH = appRoot.pathname
-/* 4-bis. Exponemos el nombre del archivo para que envFile se “use” */
-process.env.ENV_FILENAME = envFile // <-- evita TS6133
-
-/* 5. Creamos la instancia de Env con validaciones */
-export default await Env.create(appRoot, {
+/* 5. Creamos la instancia de Env usando la ruta como URL */
+export default await Env.create(new URL(`file://${appRootPath}/`), {
   NODE_ENV: Env.schema.enum(['development', 'dev', 'main', 'production', 'test'] as const),
 
   PORT: Env.schema.number(),
