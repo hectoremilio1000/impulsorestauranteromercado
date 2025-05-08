@@ -37,8 +37,8 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare email: string
 
   // Fecha en que se verificó el email (opcional)
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare email_verified_at: DateTime | null
+  @column.dateTime({ columnName: 'email_verified_at' }) // ← binding explícito
+  declare emailVerifiedAt: DateTime | null
 
   // Contraseña (oculta en respuestas JSON)
   @column({ serializeAs: null })
