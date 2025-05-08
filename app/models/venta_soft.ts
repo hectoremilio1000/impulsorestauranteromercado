@@ -40,6 +40,9 @@ export default class VentaSoft extends BaseModel {
   declare idmeseroproducto: string
 
   @column()
+  declare name_mesero: string
+
+  @column()
   declare apertura: string
 
   @column()
