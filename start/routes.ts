@@ -12,6 +12,7 @@ import { sep, normalize } from 'node:path'
 import app from '@adonisjs/core/services/app'
 const AuthController = () => import('../app/controllers/auth_controller.js')
 import { middleware } from './kernel.js'
+import VentasSoftsController from '#controllers/ventas_softs_controller'
 const CompaniesController = () => import('../app/controllers/companies_controller.js')
 const RolesController = () => import('../app/controllers/roles_controller.js')
 const TestMailsController = () => import('../app/controllers/test_mails_controller.js')
@@ -302,6 +303,14 @@ router.get('/api/plans/:id', [PlansController, 'show']).as('plan.show')
 router.post('/api/plans', [PlansController, 'store']).as('plan.store')
 router.put('/api/plans/:id', [PlansController, 'update']).as('plan.update')
 router.delete('/api/plans/:id', [PlansController, 'destroy']).as('plan.destroy')
+
+//RUTA PARA RECIBIR LOS DATOS DE LOS resultados
+router.get('/api/ventas_softs', [VentasSoftsController, 'index']).as('venta_soft.index')
+router.get('/api/ventas_softs/:id', [VentasSoftsController, 'show']).as('venta_soft.show')
+router.post('/api/ventas_softs', [VentasSoftsController, 'store']).as('venta_soft.store')
+router
+  .post('/api/ventasSoftsMasive', [VentasSoftsController, 'ventasSoftsMasive'])
+  .as('venta_soft.ventasSoftsMasive')
 
 // RUTAS PARA modules de apps
 router.get('/api/modules', [ModulesController, 'index']).as('module.index')
