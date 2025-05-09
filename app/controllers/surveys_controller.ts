@@ -1,6 +1,7 @@
 // file: app/Controllers/Http/SurveysController.ts
-import Survey from '#app/models/survey'
-import SurveyQuestion from '#app/models/survey_question'
+
+import Survey from '#models/survey'
+import SurveyQuestion from '#models/survey_question'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class SurveysController {

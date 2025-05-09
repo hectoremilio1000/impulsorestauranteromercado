@@ -1,6 +1,6 @@
 // app/Controllers/Http/EmployeeTrainingPathsController.ts
 
-import EmployeeTrainingPath from '#app/models/training_employee_path'
+import EmployeeTrainingPath from '#models/training_employee_path'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class EmployeeTrainingPathsController {

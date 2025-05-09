@@ -1,3 +1,4 @@
+/* eslint-disable @adonisjs/prefer-lazy-controller-import */
 /*
 |--------------------------------------------------------------------------
 | Routes file
@@ -13,6 +14,7 @@ import app from '@adonisjs/core/services/app'
 const AuthController = () => import('../app/controllers/auth_controller.js')
 import { middleware } from './kernel.js'
 import VentasSoftsController from '#controllers/ventas_softs_controller'
+import VentasDashboardsController from '#controllers/ventas_dashboards_controller'
 const CompaniesController = () => import('../app/controllers/companies_controller.js')
 const RolesController = () => import('../app/controllers/roles_controller.js')
 const TestMailsController = () => import('../app/controllers/test_mails_controller.js')
@@ -621,6 +623,16 @@ router.post('/api/marketing-tickets/uploadSingle', [
 // Módulo de Punto de Venta
 router.get('/api/punto-venta-tickets', [PuntoVentaTicketsController, 'index'])
 router.get('/api/punto-venta-tickets/:id', [PuntoVentaTicketsController, 'show'])
+
+router
+  .group(() => {
+    router.get('/overview', [VentasDashboardsController, 'overview'])
+    router.get('/products', [VentasDashboardsController, 'products'])
+    router.get('/waiters', [VentasDashboardsController, 'waiters'])
+    router.get('/payment-mix', [VentasDashboardsController, 'paymentMix'])
+  })
+  .prefix('/api/ventas-softs')
+  .middleware([middleware.auth({ guards: ['api'] })])
 
 // Crear ticket con un archivo
 router.post('/api/punto-venta-tickets/uploadSingle', [PuntoVentaTicketsController, 'storeSingle'])
