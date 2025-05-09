@@ -6,6 +6,7 @@ import Prospect from './prospect.js'
 import User from './user.js'
 
 export default class Response extends BaseModel {
+  public static table = 'responses'
   @column({ isPrimary: true })
   declare id: number
 
