@@ -69,18 +69,13 @@ export default class AuthController {
     const { email, password } = await request.validateUsing(loginValidator)
     const user = await User.verifyCredentials(email, password)
 
+    if (!user.isActive) {
+      return response.badRequest({ message: 'Usuario desactivado' })
+    }
     // 2. Crear el token con el provider nativo
     const token = await User.accessTokens.create(user, ['*'], {
       expiresIn: '30 days',
     })
-
-    // 2) Verificar isActive
-    if (!user?.isActive) {
-      return response.badRequest({
-        status: 'error',
-        message: 'Este usuario está desactivado. Contacta al administrador',
-      })
-    }
 
     // 3. El token devuelto incluye `.value!.release()` para leerlo en claro
     return response.json({
