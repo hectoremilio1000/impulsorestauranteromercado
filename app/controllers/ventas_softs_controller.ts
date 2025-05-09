@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import VentaSoft from '#models/venta_soft'
 import type { HttpContext } from '@adonisjs/core/http'
 

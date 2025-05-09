@@ -1,7 +1,7 @@
-import Module from '#app/models/module'
-import Plan from '#app/models/plan'
-import PlanChange from '#app/models/plan_change'
-import Subscription from '#app/models/subscription'
+import Module from '#models/module'
+import Plan from '#models/plan'
+import PlanChange from '#models/plan_change'
+import Subscription from '#models/subscription'
 import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
 

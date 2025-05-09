@@ -1,4 +1,4 @@
-import CandidatoIdeal from '#app/models/rrhh_candidato_ideal'
+import CandidatoIdeal from '#models/rrhh_candidato_ideal'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class CandidatoIdealController {
