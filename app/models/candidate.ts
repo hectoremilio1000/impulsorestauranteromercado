@@ -3,6 +3,7 @@ import { BaseModel, belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
 import Answer from './answer.js'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import Company from './company.js'
+import Position from './position.js'
 
 export default class Candidate extends BaseModel {
   @column({ isPrimary: true })
@@ -78,4 +79,9 @@ export default class Candidate extends BaseModel {
     foreignKey: 'companyId', // La FK que definimos
   })
   declare company: BelongsTo<typeof Company>
+
+  @belongsTo(() => Position, {
+    foreignKey: 'position_id',
+  })
+  declare position: BelongsTo<typeof Position>
 }
