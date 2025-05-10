@@ -116,17 +116,10 @@ export default class CandidatesController {
         ? Number(request.input('position_id'))
         : null
 
-      if (!positionId) {
+      if (!nombre || !whatsapp || !email || !positionId) {
         return response.badRequest({
           status: 'error',
-          message: 'Falta el position_id (ID numérico del puesto)',
-        })
-      }
-
-      if (!nombre || !whatsapp || !email || !puesto) {
-        return response.badRequest({
-          status: 'error',
-          message: 'Faltan campos requeridos (nombre, whatsapp, email, puesto)',
+          message: 'Faltan campos requeridos (nombre, whatsapp, email, position_id)',
         })
       }
 
