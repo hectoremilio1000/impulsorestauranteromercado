@@ -12,6 +12,11 @@ export default class Exam extends BaseModel {
 
   @column()
   declare type: string
+  @column()
+  declare version: number // ✨ NUEVO
+
+  @column()
+  declare active: boolean
 
   @hasMany(() => QuestionCandidate, {
     foreignKey: 'exam_id',
