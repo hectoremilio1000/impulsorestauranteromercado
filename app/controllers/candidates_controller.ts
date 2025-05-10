@@ -112,6 +112,16 @@ export default class CandidatesController {
       const whatsapp = request.input('whatsapp')
       const email = request.input('email')
       const puesto = request.input('puesto')
+      const positionId = request.input('position_id') // ← número
+        ? Number(request.input('position_id'))
+        : null
+
+      if (!positionId) {
+        return response.badRequest({
+          status: 'error',
+          message: 'Falta el position_id (ID numérico del puesto)',
+        })
+      }
 
       if (!nombre || !whatsapp || !email || !puesto) {
         return response.badRequest({
@@ -141,7 +151,7 @@ export default class CandidatesController {
         name: nombre,
         whatsapp,
         email,
-        positionId: puesto,
+        positionId,
         cv_path: `storage/uploads/${finalFileName}`,
 
         reference1Company: ref1Company,
