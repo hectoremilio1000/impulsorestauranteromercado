@@ -1,6 +1,6 @@
 // file: app/Controllers/Http/PermisosLegalesController.ts
 
-import PermisoLegal from '#app/models/permisos_legale'
+import PermisoLegal from '#models/permisos_legale'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class PermisosLegalesController {

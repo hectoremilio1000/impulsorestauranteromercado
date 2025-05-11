@@ -17,8 +17,8 @@ export default class PermisoLegal extends BaseModel {
   @column()
   declare institucion: string | null
 
-  @column()
-  declare tramite_link: string | null
+  @column({ columnName: 'tramite_link' })
+  declare tramiteLink: string
 
   @column()
   declare costo: string | null
