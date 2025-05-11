@@ -28,8 +28,8 @@ export default class Candidate extends BaseModel {
   declare positionId: number
 
   // 1) Tu nueva columna
-  @column()
-  declare company_id: number | null
+  @column({ columnName: 'company_id' })
+  declare companyId: number | null // FK → companies.id (puede ser null)
 
   @column({ columnName: 'reference1_company' })
   declare reference1Company: string
@@ -75,13 +75,9 @@ export default class Candidate extends BaseModel {
   })
   declare answers: HasMany<typeof Answer>
 
-  @belongsTo(() => Company, {
-    foreignKey: 'companyId', // La FK que definimos
-  })
+  @belongsTo(() => Company, { foreignKey: 'companyId' })
   declare company: BelongsTo<typeof Company>
 
-  @belongsTo(() => Position, {
-    foreignKey: 'position_id',
-  })
+  @belongsTo(() => Position, { foreignKey: 'positionId' })
   declare position: BelongsTo<typeof Position>
 }

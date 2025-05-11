@@ -10,12 +10,22 @@ export default class CandidatesController {
   // GET /api/candidates
   public async index({}: HttpContext) {
     try {
-      const candidates = await Candidate.all()
+      /* 1️⃣  Trae candidatos + nombre del puesto  */
+      const candidates = await Candidate.query().preload('position', (q) =>
+        q.select(['id', 'nombre'])
+      )
+
+      /* 2️⃣  Aplana el resultado para frontend */
+      const data = candidates.map((c) => ({
+        ...c.serialize(), // todos los campos del candidato
+        positionName: c.position?.nombre, // ← «Mesero», «Gerente», etc.
+      }))
+
       return {
         status: 'success',
         code: 200,
         message: 'Candidates fetched successfully',
-        data: candidates,
+        data,
       }
     } catch (error) {
       return {
@@ -160,7 +170,7 @@ export default class CandidatesController {
         reference2Whatsapp: ref2Whatsapp,
 
         status: 'To Review',
-        company_id: companyId ? Number(companyId) : null,
+        companyId: companyId ? Number(companyId) : null,
       })
 
       return response.ok({
@@ -225,7 +235,7 @@ export default class CandidatesController {
       // 1) Si pasa a "Approved" => creamos Employee y User
       if (newStatus === 'Approved' && oldStatus !== 'Approved') {
         // Obtenemos el company_id
-        const companyId = candidate.company_id || 1
+        const companyId = candidate.companyId || 1
         await Company.findOrFail(companyId)
 
         // Asegúrate de tener en tu BD: roles.id = 4
