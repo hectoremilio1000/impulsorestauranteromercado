@@ -1,6 +1,6 @@
-import LoyaltyCard from '#app/models/loyalty_card'
-import LoyaltyProgram from '#app/models/loyalty_program'
-import LoyaltyRequest from '#app/models/loyalty_request'
+import LoyaltyCard from '#models/loyalty_card'
+import LoyaltyProgram from '#models/loyalty_program'
+import LoyaltyRequest from '#models/loyalty_request'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class LoyaltyRequestsController {
