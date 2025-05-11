@@ -1,7 +1,7 @@
 // database/seeders/Role.ts
 
+import Role from '#models/role'
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
-import Role from '../../app/models/role.js'
 
 export default class RoleSeeder extends BaseSeeder {
   public async run() {
