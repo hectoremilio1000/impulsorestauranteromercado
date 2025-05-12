@@ -46,7 +46,7 @@ export default class UserSeeder extends BaseSeeder {
       id: 5,
       name: 'Hector',
       email: 'hectoremilio2@hotmail.com',
-      plainPassword: '01Hv193084',
+      plainPassword: '01Hv1930#',
       emailVerifiedAt: '2024-12-18T19:49:52',
       rolId: 2,
       isActive: true,
