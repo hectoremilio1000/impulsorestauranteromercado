@@ -121,7 +121,7 @@ export default class CandidatesController {
       const nombre = request.input('nombre')
       const whatsapp = request.input('whatsapp')
       const email = request.input('email')
-      const puesto = request.input('puesto')
+
       const positionId = request.input('position_id') // ← número
         ? Number(request.input('position_id'))
         : null

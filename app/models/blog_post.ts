@@ -30,9 +30,9 @@ export default class BlogPost extends BaseModel {
   /**
    * Guarda el HTML/Markdown del artículo.
    * Usa `longtext` en la BD si esperas contenido extenso.
-   */
-  @column({ serializeAs: null, consume: (v) => v ?? null }) // oculto en JSON
-  declare content: string | null
+  //  */
+  // @column({ serializeAs: null, consume: (v) => v ?? null }) // oculto en JSON
+  // declare content: string | null
 
   /* ──────────────────────────── Publicación y autor ─────────────────────────── */
   @column.dateTime({ columnName: 'published_at' })

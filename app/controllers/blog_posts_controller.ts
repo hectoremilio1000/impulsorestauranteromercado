@@ -22,6 +22,19 @@ export default class BlogPostsController {
     // omitimos "content" para reducir payload
     return posts.serialize({ fields: { omit: ['content'] } })
   }
+  public async findById({ params, response }: HttpContext) {
+    const post = await BlogPost.query()
+      .where('id', params.id)
+      .preload('author')
+      .preload('blocks', (q) => q.orderBy('order'))
+      .first()
+
+    if (!post) {
+      return response.notFound({ error: 'Post no encontrado' })
+    }
+
+    return post.serialize()
+  }
 
   /**
    * GET /blog-posts/:slug
