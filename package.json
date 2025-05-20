@@ -56,7 +56,7 @@
     "@adonisjs/validator": "^13.0.2",
     "@adonisjs/vite": "4.0.0",
     "@googleapis/docs": "^3.3.0",
-    "@vinejs/vine": "^2.1.0",
+    "@vinejs/vine": "^3.0.1",
     "adonis5-scheduler": "^2.1.1",
     "axios": "^1.9.0",
     "cron": "^3.5.0",

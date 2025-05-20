@@ -3,6 +3,8 @@
   "compilerOptions": {
     "rootDir": "./",
     "outDir": "./build",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "types": ["@adonisjs/core", "@adonisjs/lucid"],
     "baseUrl": ".",
     "allowJs": true,
