@@ -873,32 +873,28 @@ router.get('/api/storage/uploads/inventarios/*', ({ request, response }) => {
 })
 
 //blog
+
 router
   .group(() => {
     const BlogPosts = () => import('../app/controllers/blog_posts_controller.js')
 
-    /* ────────────────  Endpoints públicos  ──────────────── */
-    // GET /api/blog-posts        → index
-    router.get('/blog-posts', [BlogPosts, 'index']).as('blogPosts.index')
+    // Nueva ruta por ID
+    router.get('/blog-posts/id/:id', [BlogPosts, 'findById']).as('blogPosts.findById')
 
-    // GET /api/blog-posts/:slug  → show  (usa slug, no ID)
+    router.get('/blog-posts', [BlogPosts, 'index']).as('blogPosts.index')
     router.get('/blog-posts/:slug', [BlogPosts, 'show']).as('blogPosts.show')
 
-    /* ────────────────  Endpoints protegidos  ─────────────── */
-    // POST /api/blog-posts       → store
     router
       .post('/blog-posts', [BlogPosts, 'store'])
       .as('blogPosts.store')
       .use(middleware.auth({ guards: ['api'] }))
 
-    // PUT /api/blog-posts/:id    → update
     router
       .put('/blog-posts/:id', [BlogPosts, 'update'])
       .as('blogPosts.update')
       .where('id', /^\d+$/)
       .use(middleware.auth({ guards: ['api'] }))
 
-    // DELETE /api/blog-posts/:id → destroy
     router
       .delete('/blog-posts/:id', [BlogPosts, 'destroy'])
       .as('blogPosts.destroy')
