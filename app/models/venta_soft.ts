@@ -3,68 +3,114 @@ import { BaseModel, column } from '@adonisjs/lucid/orm'
 
 export default class VentaSoft extends BaseModel {
   public static table = 'ventas_softs'
+
   @column({ isPrimary: true })
   declare id: number
 
   @column()
-  declare company_id: number
+  declare company_id: number | null
 
   @column()
-  declare cantidad: number
+  declare folio: string | null
 
   @column()
-  declare descuento: number
+  declare mesa: string | null
 
   @column()
-  declare name_producto: string
+  declare total_cuenta: number | null
 
   @column()
-  declare precio: number
-
-  @column({ columnName: 'impuesto1' })
-  declare impuesto1: number
+  declare idturno: string | null
 
   @column()
-  declare preciosinimpuestos: number
+  declare totalarticulos: number | null
 
   @column()
-  declare preciocatalogo: number
+  declare efectivo: number | null
 
   @column()
-  declare comentario: string
+  declare tarjeta: number | null
 
   @column()
-  declare idestacion: string
+  declare vales: number | null
 
   @column()
-  declare idmeseroproducto: string
+  declare otros: number | null
 
   @column()
-  declare name_mesero: string
+  declare propina: number | null
 
   @column()
-  declare apertura: string
+  declare totalconpropina: number | null
 
   @column()
-  declare cierre: string
+  declare idtipodescuento: number | null
 
   @column()
-  declare cajero: string
+  declare descuento_cuenta: number | null
 
   @column()
-  declare efectivo: number
+  declare cancelado: number | null
 
   @column()
-  declare vales: number
+  declare cantidad: number | null
 
   @column()
-  declare tarjeta: number
+  declare descuento: number | null
 
   @column()
-  declare credito: number
+  declare name_producto: string | null
 
   @column()
-  declare fondo: number
+  declare clasificacion: string | null
+
+  @column()
+  declare precio: number | null
+
+  @column()
+  declare impuesto1: number | null
+
+  @column()
+  declare preciosinimpuestos: number | null
+
+  @column()
+  declare preciocatalogo: number | null
+
+  @column()
+  declare comentario: string | null
+
+  @column()
+  declare idestacion: string | null
+
+  @column()
+  declare idmeseroproducto: string | null
+
+  @column()
+  declare name_mesero: string | null
+
+  @column()
+  declare apertura: string | null
+
+  @column()
+  declare cierre: string | null
+
+  @column()
+  declare cajero: string | null
+
+  @column()
+  declare turno_efectivo: number | null
+
+  @column()
+  declare turno_vales: number | null
+
+  @column()
+  declare turno_tarjeta: number | null
+
+  @column()
+  declare credito: number | null
+
+  @column()
+  declare fondo: number | null
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
