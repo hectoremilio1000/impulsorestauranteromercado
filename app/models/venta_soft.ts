@@ -67,7 +67,7 @@ export default class VentaSoft extends BaseModel {
   @column()
   declare precio: number | null
 
-  @column()
+  @column({ columnName: 'impuesto1' })
   declare impuesto1: number | null
 
   @column()
