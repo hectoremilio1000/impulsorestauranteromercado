@@ -13,7 +13,7 @@ const __dirname = dirname(__filename)
 const appRootPath = resolve(__dirname, '..') // esto es un string
 
 /* 2. Detectamos NODE_ENV o usamos 'development' por defecto */
-const nodeEnv = process.env.NODE_ENV || 'local'
+const nodeEnv = process.env.NODE_ENV || 'development'
 
 /* 3. Elegimos el archivo .env correspondiente */
 let envFile: string
@@ -37,7 +37,7 @@ process.env.ENV_FILENAME = envFile
 
 /* 5. Creamos la instancia de Env usando la ruta como URL */
 export default await Env.create(new URL(`file://${appRootPath}/`), {
-  NODE_ENV: Env.schema.enum(['local', 'dev', 'main', 'production', 'test'] as const),
+  NODE_ENV: Env.schema.enum(['development', 'dev', 'main', 'production', 'test'] as const),
 
   PORT: Env.schema.number(),
   APP_KEY: Env.schema.string(),
