@@ -13,8 +13,10 @@ const mailConfig = defineConfig({
     smtp: transports.smtp({
       host: env.get('SMTP_HOST'),
       port: env.get('SMTP_PORT'),
-
-      secure: true, // Requiere conexión segura
+      secure: env.get('SMTP_SECURE'),
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
       /**
        * Uncomment the auth block if your SMTP
        * server needs authentication
