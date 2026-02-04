@@ -10,6 +10,8 @@ import Prospect from '#models/prospect'
 import Response from '#models/response'
 import Recommendation from '#models/recommendation'
 
+const mailFrom = env.get('SMTP_FROM') || env.get('SMTP_USERNAME')
+
 export default class ProspectsController {
   public async index({}: HttpContext) {
     try {
@@ -94,7 +96,7 @@ export default class ProspectsController {
       await mail.send((message) => {
         message
           .to(data.email)
-          .from(env.get('SMTP_USERNAME'))
+          .from(mailFrom)
           .subject('Impulso Restaurantero: Nos pondremos en contacto pronto para el meeting')
           .html(
             `
@@ -242,7 +244,7 @@ export default class ProspectsController {
         await mail.send((message) => {
           message
             .to(data.email)
-            .from(env.get('SMTP_USERNAME'))
+            .from(mailFrom)
             .subject('Recomendaciones de Impulso Restaurantero').html(`
                 <h1>¡Gracias por tus respuestas, ${data.first_name}!</h1>
                 <p>Estas son nuestras recomendaciones personalizadas para tu restaurante:</p>
@@ -290,7 +292,7 @@ export default class ProspectsController {
       await mail.send((message) => {
         message
           .to(data.email) // Destinatario
-          .from(env.get('SMTP_USERNAME')) // Remitente configurado en .env
+          .from(mailFrom) // Remitente configurado en .env
           .subject('Impulso Restaurantero: Estudio de casos exitosos') // Asunto del correo
           .html(
             `

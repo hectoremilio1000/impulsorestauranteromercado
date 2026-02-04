@@ -57,6 +57,7 @@ export default await Env.create(new URL(`file://${appRootPath}/`), {
   SMTP_HOST: Env.schema.string(),
   SMTP_PORT: Env.schema.number(),
   SMTP_SECURE: Env.schema.boolean(),
+  SMTP_FROM: Env.schema.string.optional(),
   SMTP_USERNAME: Env.schema.string(),
   SMTP_PASSWORD: Env.schema.string(),
 

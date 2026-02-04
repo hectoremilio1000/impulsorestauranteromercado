@@ -2,6 +2,8 @@ import env from '#start/env'
 import type { HttpContext } from '@adonisjs/core/http'
 import mail from '@adonisjs/mail/services/main'
 
+const mailFrom = env.get('SMTP_FROM') || env.get('SMTP_USERNAME')
+
 export default class TestMailsController {
   public async index({ request }: HttpContext) {
     const data = request.only(['email', 'message']) // Asume que estos campos existen
@@ -9,7 +11,7 @@ export default class TestMailsController {
 
     try {
       await mail.send((message) => {
-        message.to(data.email).from(env.get('SMTP_USERNAME')).subject(data.message)
+        message.to(data.email).from(mailFrom).subject(data.message)
       })
 
       return {
@@ -33,7 +35,7 @@ export default class TestMailsController {
 
     try {
       await mail.send((message) => {
-        message.to(data.email).from(env.get('SMTP_USERNAME')).subject(data.message)
+        message.to(data.email).from(mailFrom).subject(data.message)
       })
 
       return {

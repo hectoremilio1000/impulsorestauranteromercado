@@ -6,6 +6,8 @@ import type { HttpContext } from '@adonisjs/core/http'
 import Mail from '@adonisjs/mail/services/main'
 import { v4 as uuidv4 } from 'uuid'
 
+const mailFrom = env.get('SMTP_FROM') || env.get('SMTP_USERNAME')
+
 export default class AuthController {
   public async index({ response }: HttpContext) {
     try {
@@ -180,7 +182,7 @@ export default class AuthController {
       await Mail.send((message) => {
         message
           .to(user.email)
-          .from(env.get('SMTP_USERNAME')) // <--- usar el mismo "from" que en ProspectsController
+          .from(mailFrom) // <--- usar un remitente válido (SMTP_FROM recomendado)
           .subject('Recuperar contraseña').html(`
             <html>
               <body>
