@@ -1,16 +1,14 @@
 import type { HttpContext } from '@adonisjs/core/http'
 
 import app from '@adonisjs/core/services/app'
-import mail from '@adonisjs/mail/services/main'
+import { sendEmail } from '#services/resend_mailer'
 
 import OpenAI from 'openai'
 
-import env from '#start/env'
 import Prospect from '#models/prospect'
 import Response from '#models/response'
 import Recommendation from '#models/recommendation'
-
-const mailFrom = env.get('SMTP_FROM') || env.get('SMTP_USERNAME')
+import fs from 'node:fs/promises'
 
 export default class ProspectsController {
   public async index({}: HttpContext) {
@@ -93,27 +91,23 @@ export default class ProspectsController {
 
       const prospect = await Prospect.create(data)
 
-      await mail.send((message) => {
-        message
-          .to(data.email)
-          .from(mailFrom)
-          .subject('Impulso Restaurantero: Nos pondremos en contacto pronto para el meeting')
-          .html(
-            `
-            <html>
-              <body>
-                <h1>¡Gracias por tu interés en nuestros servicios!</h1>
-                <p>Hola, ${data.first_name} ${data.last_name},</p>
-                <p>
-                  Hemos recibido tu solicitud y nos pondremos en contacto contigo para coordinar una reunión presencial o virtual y ayudarte a potenciar tu restaurante con nuestros servicios.
-                </p>
-                <p>¡Estamos emocionados de ayudarte!</p>
-                <p>Atentamente,</p>
-                <p>El equipo de Impulso Restaurantero</p>
-              </body>
-            </html>
-          `
-          )
+      await sendEmail({
+        to: data.email,
+        subject: 'Impulso Restaurantero: Nos pondremos en contacto pronto para el meeting',
+        html: `
+          <html>
+            <body>
+              <h1>¡Gracias por tu interés en nuestros servicios!</h1>
+              <p>Hola, ${data.first_name} ${data.last_name},</p>
+              <p>
+                Hemos recibido tu solicitud y nos pondremos en contacto contigo para coordinar una reunión presencial o virtual y ayudarte a potenciar tu restaurante con nuestros servicios.
+              </p>
+              <p>¡Estamos emocionados de ayudarte!</p>
+              <p>Atentamente,</p>
+              <p>El equipo de Impulso Restaurantero</p>
+            </body>
+          </html>
+        `,
       })
 
       return {
@@ -241,15 +235,14 @@ export default class ProspectsController {
         })
 
         // 7) Enviar correo al usuario con las recomendaciones
-        await mail.send((message) => {
-          message
-            .to(data.email)
-            .from(mailFrom)
-            .subject('Recomendaciones de Impulso Restaurantero').html(`
-                <h1>¡Gracias por tus respuestas, ${data.first_name}!</h1>
-                <p>Estas son nuestras recomendaciones personalizadas para tu restaurante:</p>
-                <pre>${recomendaciones}</pre>
-              `)
+        await sendEmail({
+          to: data.email,
+          subject: 'Recomendaciones de Impulso Restaurantero',
+          html: `
+            <h1>¡Gracias por tus respuestas, ${data.first_name}!</h1>
+            <p>Estas son nuestras recomendaciones personalizadas para tu restaurante:</p>
+            <pre>${recomendaciones}</pre>
+          `,
         })
 
         // 8) Respuesta final al cliente
@@ -289,26 +282,28 @@ export default class ProspectsController {
       )
 
       // Enviar el correo con el contenido directamente
-      await mail.send((message) => {
-        message
-          .to(data.email) // Destinatario
-          .from(mailFrom) // Remitente configurado en .env
-          .subject('Impulso Restaurantero: Estudio de casos exitosos') // Asunto del correo
-          .html(
-            `
-            <html>
-              <body>
-                <h1>¡Gracias por tu interés en nuestros estudios de casos exitosos!</h1>
-                <p>Hola, ${data.first_name} ${data.last_name},</p>
-                <p>
-                  Adjuntamos un archivo PDF con el estudio de 33 restaurantes exitosos para que puedas inspirarte y lograr el éxito en tu negocio.
-                </p>
-                <p>¡Éxito!</p>
-              </body>
-            </html>
-          `
-          ) // Contenido del correo en formato HTML
-          .attach(pdfPath, { filename: 'Estudio_de_3_Restaurantes_que_Triunfan_a_lo_Grande.pdf' }) // Adjunto
+      const pdfBuffer = await fs.readFile(pdfPath)
+      await sendEmail({
+        to: data.email,
+        subject: 'Impulso Restaurantero: Estudio de casos exitosos',
+        html: `
+          <html>
+            <body>
+              <h1>¡Gracias por tu interés en nuestros estudios de casos exitosos!</h1>
+              <p>Hola, ${data.first_name} ${data.last_name},</p>
+              <p>
+                Adjuntamos un archivo PDF con el estudio de 33 restaurantes exitosos para que puedas inspirarte y lograr el éxito en tu negocio.
+              </p>
+              <p>¡Éxito!</p>
+            </body>
+          </html>
+        `,
+        attachments: [
+          {
+            filename: 'Estudio_de_3_Restaurantes_que_Triunfan_a_lo_Grande.pdf',
+            content: pdfBuffer.toString('base64'),
+          },
+        ],
       })
 
       // Respuesta de éxito

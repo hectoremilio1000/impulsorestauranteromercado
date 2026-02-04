@@ -3,10 +3,8 @@ import User from '#models/user'
 import env from '#start/env'
 import { loginValidator, registerValidator } from '#validators/auth'
 import type { HttpContext } from '@adonisjs/core/http'
-import Mail from '@adonisjs/mail/services/main'
+import { sendEmail } from '#services/resend_mailer'
 import { v4 as uuidv4 } from 'uuid'
-
-const mailFrom = env.get('SMTP_FROM') || env.get('SMTP_USERNAME')
 
 export default class AuthController {
   public async index({ response }: HttpContext) {
@@ -179,22 +177,21 @@ export default class AuthController {
       const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`
 
       // Enviar correo
-      await Mail.send((message) => {
-        message
-          .to(user.email)
-          .from(mailFrom) // <--- usar un remitente válido (SMTP_FROM recomendado)
-          .subject('Recuperar contraseña').html(`
-            <html>
-              <body>
-                <h1>Recupera tu contraseña</h1>
-                <p>Tu token de recuperación es: ${resetToken}</p>
-                <p>Haz click para ir a la pantalla de reestablecer contraseña:</p>
-                <a href="${resetLink}">Resetear Contraseña</a>
-                <br />
-                <p>O copia y pega en tu navegador: ${resetLink}</p>
-              </body>
-            </html>
-          `)
+      await sendEmail({
+        to: user.email,
+        subject: 'Recuperar contraseña',
+        html: `
+          <html>
+            <body>
+              <h1>Recupera tu contraseña</h1>
+              <p>Tu token de recuperación es: ${resetToken}</p>
+              <p>Haz click para ir a la pantalla de reestablecer contraseña:</p>
+              <a href="${resetLink}">Resetear Contraseña</a>
+              <br />
+              <p>O copia y pega en tu navegador: ${resetLink}</p>
+            </body>
+          </html>
+        `,
       })
 
       return response.json({ success: true, message: 'Correo enviado' })
