@@ -351,6 +351,10 @@ router
   .post('/api/prospectswebsite', [ProspectsController, 'storeWebSite'])
   .as('prospect.storeWebSite')
 
+router
+  .post('/api/prospects-growthsuite', [ProspectsController, 'storeGrowthsuite'])
+  .as('prospect.storeGrowthsuite')
+
 //RUTA PARA RECIBIR LOS DATOS DE LAS QUESTIONS
 router.get('/api/questions', [QuestionsController, 'index']).as('question.index')
 router

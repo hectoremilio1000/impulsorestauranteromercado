@@ -11,6 +11,7 @@ type SendEmailInput = {
   html: string
   from?: string
   attachments?: ResendAttachment[]
+  apiKey?: string
 }
 
 export async function sendEmail({
@@ -19,8 +20,9 @@ export async function sendEmail({
   html,
   from,
   attachments,
+  apiKey,
 }: SendEmailInput) {
-  const apiKey = env.get('RESEND_API_KEY')
+  const resolvedApiKey = apiKey || env.get('RESEND_API_KEY')
   const fromAddress = from || env.get('SMTP_FROM')
 
   if (!fromAddress) {
@@ -34,7 +36,7 @@ export async function sendEmail({
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${resolvedApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({

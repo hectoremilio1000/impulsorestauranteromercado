@@ -63,6 +63,7 @@ export default await Env.create(new URL(`file://${appRootPath}/`), {
 
   // --- Resend API
   RESEND_API_KEY: Env.schema.string(),
+  RESEND_API_KEY_GROWTHSUITE: Env.schema.string(),
 
   // --- Mercadopago
   MP_ACCESS_TOKEN: Env.schema.string(),

@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 
 import app from '@adonisjs/core/services/app'
+import env from '#start/env'
 import { sendEmail } from '#services/resend_mailer'
 
 import OpenAI from 'openai'
@@ -321,4 +322,70 @@ export default class ProspectsController {
       })
     }
   }
+  public async storeGrowthsuite({ request }: HttpContext) {
+    try {
+      const data = request.only([
+        'first_name',
+        'last_name',
+        'email',
+        'whatsapp',
+        'status',
+        'origin',
+      ])
+
+      const prospect = await Prospect.create(data)
+
+      await sendEmail({
+        to: data.email,
+        subject: 'Growthsuite: Gracias por tu interés',
+        from: 'Growthsuite <clientes@growthsuite.com.mx>',
+        apiKey: env.get('RESEND_API_KEY_GROWTHSUITE'),
+        html: `
+          <div style="margin:0;padding:32px;background:#f5f7fb;font-family: 'Inter', Arial, sans-serif;">
+            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:640px;margin:0 auto;background:#ffffff;border-radius:16px;box-shadow:0 20px 40px rgba(15,23,42,0.12);overflow:hidden;">
+              <tr>
+                <td style="padding:28px 32px;background:linear-gradient(135deg,#1d85f4,#4da3ff);color:#ffffff;">
+                  <h1 style="margin:0;font-size:24px;font-weight:700;">Growthsuite</h1>
+                  <p style="margin:6px 0 0;font-size:14px;opacity:0.9;">Plataforma todo en uno para restaurantes</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:28px 32px;color:#0b1220;">
+                  <p style="margin:0 0 16px;font-size:16px;">Hola ${data.first_name} ${data.last_name},</p>
+                  <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#4b5563;">
+                    Gracias por tu interés. Hemos recibido tu solicitud y en breve un especialista de Growthsuite se pondrá en contacto contigo para agendar una demo.
+                  </p>
+                  <div style="margin:24px 0;">
+                    <span style="display:inline-block;padding:10px 16px;border-radius:999px;background:#eef5ff;color:#1d85f4;font-size:13px;font-weight:600;">Solicitud recibida</span>
+                  </div>
+                  <p style="margin:0;font-size:14px;color:#6b7280;">Mientras tanto, si necesitas algo adicional, responde este correo.</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:20px 32px;background:#0b1220;color:#e5e7eb;font-size:12px;text-align:center;">
+                  Growthsuite · clientes@growthsuite.com.mx
+                </td>
+              </tr>
+            </table>
+          </div>
+        `,
+      })
+
+      return {
+        status: 'success',
+        code: 200,
+        message: 'Prospecto creado y correo enviado exitosamente.',
+        data: prospect,
+      }
+    } catch (error) {
+      console.error('Error en storeGrowthsuite:', error)
+      return {
+        status: 'error',
+        code: 500,
+        message: 'Error al crear el prospecto o enviar el correo.',
+        error: error.message,
+      }
+    }
+  }
+
 }
