@@ -11,6 +11,52 @@ import Response from '#models/response'
 import Recommendation from '#models/recommendation'
 import fs from 'node:fs/promises'
 
+type ProspectPayload = {
+  first_name?: string
+  last_name?: string
+  email?: string
+  whatsapp?: string
+  status?: string
+  origin?: string
+}
+
+function normalizeProspectPayload(payload: ProspectPayload) {
+  const firstNameRaw = String(payload.first_name ?? '').trim()
+  const lastNameRaw = String(payload.last_name ?? '').trim()
+
+  let firstName = firstNameRaw
+  let lastName = lastNameRaw
+
+  // If the frontend sends a full name in first_name, split it safely.
+  if (!lastName && firstNameRaw) {
+    const parts = firstNameRaw.split(/\s+/).filter(Boolean)
+    if (parts.length > 1) {
+      firstName = parts.shift() || firstNameRaw
+      lastName = parts.join(' ')
+    }
+  }
+
+  if (!firstName) {
+    firstName = 'Prospecto'
+  }
+
+  // DB column is NOT NULL; use a safe fallback when surname is missing.
+  if (!lastName) {
+    lastName = '-'
+  }
+
+  return {
+    first_name: firstName,
+    last_name: lastName,
+    email: String(payload.email ?? '')
+      .trim()
+      .toLowerCase(),
+    whatsapp: String(payload.whatsapp ?? '').trim(),
+    status: String(payload.status ?? '').trim() || 'nuevo',
+    origin: String(payload.origin ?? '').trim() || 'growthsuite-foodbot',
+  }
+}
+
 export default class ProspectsController {
   public async index({}: HttpContext) {
     try {
@@ -324,14 +370,16 @@ export default class ProspectsController {
   }
   public async storeGrowthsuite({ request }: HttpContext) {
     try {
-      const data = request.only([
+      const payload = request.only([
         'first_name',
         'last_name',
         'email',
         'whatsapp',
         'status',
         'origin',
-      ])
+      ]) as ProspectPayload
+
+      const data = normalizeProspectPayload(payload)
 
       const prospect = await Prospect.create(data)
 
@@ -351,7 +399,7 @@ export default class ProspectsController {
               </tr>
               <tr>
                 <td style="padding:28px 32px;color:#0b1220;">
-                  <p style="margin:0 0 16px;font-size:16px;">Hola ${data.first_name} ${data.last_name},</p>
+                  <p style="margin:0 0 16px;font-size:16px;">Hola ${data.first_name},</p>
                   <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#4b5563;">
                     Gracias por tu interés. Hemos recibido tu solicitud y en breve un especialista de Growthsuite se pondrá en contacto contigo para agendar una demo.
                   </p>
@@ -387,5 +435,4 @@ export default class ProspectsController {
       }
     }
   }
-
 }
