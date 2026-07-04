@@ -33,6 +33,8 @@ const ModulesController = () => import('../app/controllers/modules_controller.js
 const SuccesscasesController = () => import('../app/controllers/successcases_controller.js')
 const SectionsController = () => import('../app/controllers/sections_controller.js')
 const ProspectsController = () => import('../app/controllers/prospects_controller.js')
+const RestaurantReportsController = () =>
+  import('../app/controllers/restaurant_reports_controller.js')
 const QuestionsController = () => import('../app/controllers/questions_controller.js')
 const ResponsesController = () => import('../app/controllers/responses_controller.js')
 const RecommendationsController = () => import('../app/controllers/recommendations_controller.js')
@@ -350,6 +352,24 @@ router
 router
   .post('/api/prospectswebsite', [ProspectsController, 'storeWebSite'])
   .as('prospect.storeWebSite')
+
+//RUTAS PARA EL REPORTE AI DE RESTAURANTES (Google Places + scoring)
+
+router
+  .get('/api/restaurant-reports/autocomplete', [RestaurantReportsController, 'autocomplete'])
+  .as('restaurantReports.autocomplete')
+router
+  .post('/api/restaurant-reports', [RestaurantReportsController, 'store'])
+  .as('restaurantReports.store')
+router
+  .get('/api/restaurant-reports/preview', [RestaurantReportsController, 'preview'])
+  .as('restaurantReports.preview')
+router
+  .get('/api/restaurant-reports/:id', [RestaurantReportsController, 'show'])
+  .as('restaurantReports.show')
+router
+  .post('/api/restaurant-reports/:id/lead', [RestaurantReportsController, 'createLead'])
+  .as('restaurantReports.createLead')
 
 //RUTA PARA RECIBIR LOS DATOS DE LAS QUESTIONS
 router.get('/api/questions', [QuestionsController, 'index']).as('question.index')

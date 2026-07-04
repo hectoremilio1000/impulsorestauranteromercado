@@ -59,6 +59,7 @@
     "@vinejs/vine": "^3.0.1",
     "adonis5-scheduler": "^2.1.1",
     "axios": "^1.9.0",
+    "cheerio": "^1.2.0",
     "cron": "^3.5.0",
     "crypto": "^1.0.1",
     "expo-secure-store": "^14.0.1",
