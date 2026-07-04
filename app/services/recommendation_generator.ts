@@ -23,6 +23,15 @@ export default class RecommendationGenerator {
             Este es un resumen de las respuestas del usuario ${firstName}:
             ${respuestasTexto}
 
+            REGLA OBLIGATORIA (no romper): NO inventes ni menciones nombres de productos,
+            marcas o herramientas comerciales específicas — ni reales ni inventadas
+            (nada de "Square", "Toast", "OpenTable", "Foodz", etc.). Habla SIEMPRE por
+            CATEGORÍA genérica: "un sistema de punto de venta (POS)", "una plataforma de
+            reservas en línea", "un software de inventario", "una herramienta de email
+            marketing", "una máquina de café profesional", etc. La ÚNICA marca que puedes
+            nombrar es "Impulso Restaurantero". Si no estás seguro del nombre de algo,
+            descríbelo por su función; jamás lo inventes.
+
             Con base en estas respuestas, proporciona recomendaciones personalizadas y prácticas que incluyan:
 
             1. **Inspiración Visionaria:**
@@ -71,7 +80,7 @@ export default class RecommendationGenerator {
         {
           role: 'system',
           content:
-            'Eres un asistente especializado en negocios gastronómicos y estratégicos que va a ayudar con impulso restaurantero a las personas para que crezcan su negocio.',
+            'Eres un asistente especializado en negocios gastronómicos y estratégicos que va a ayudar con impulso restaurantero a las personas para que crezcan su negocio. Nunca inventes ni menciones nombres de productos, marcas o herramientas comerciales específicas: habla siempre por categoría genérica (ej. "un sistema POS"). La única marca permitida es "Impulso Restaurantero".',
         },
         { role: 'user', content: prompt },
       ],
