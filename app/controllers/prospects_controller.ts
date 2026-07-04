@@ -4,6 +4,7 @@ import { inject } from '@adonisjs/core'
 import app from '@adonisjs/core/services/app'
 import env from '#start/env'
 import { sendEmail } from '#services/resend_mailer'
+import { buildRecommendationEmailHtml } from '#services/recommendation_email'
 import RecommendationGenerator from '#services/recommendation_generator'
 import { buildRespuestasTextoFromDb } from '#services/survey_responses_text'
 import { surveyIntakeValidator } from '#validators/survey_intake'
@@ -234,11 +235,11 @@ export default class ProspectsController {
           await sendEmail({
             to: prospectData.email,
             subject: 'Recomendaciones de Impulso Restaurantero',
-            html: `
-            <h1>¡Gracias por tus respuestas, ${prospectData.first_name}!</h1>
-            <p>Estas son nuestras recomendaciones personalizadas para tu restaurante:</p>
-            <pre>${recomendaciones}</pre>
-          `,
+            html: buildRecommendationEmailHtml({
+              firstName: prospectData.first_name,
+              respuestasTexto,
+              recomendacionesMarkdown: recomendaciones,
+            }),
           })
         } catch (mailError) {
           console.error('Error enviando email de recomendaciones:', mailError)
