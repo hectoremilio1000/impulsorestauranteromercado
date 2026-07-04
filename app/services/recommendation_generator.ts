@@ -33,12 +33,13 @@ export default class RecommendationGenerator {
             descríbelo por su función; jamás lo inventes.
 
             REGLAS DE PERSONALIZACIÓN (obligatorias):
-            1. USA LAS CIFRAS del usuario. Cita explícitamente su margen tras gastos, su
-               ticket promedio y su tamaño de inversión, y ancla los consejos a esos
-               números. Si el margen es bajo o "Nada", prioriza rentabilidad (costos y
-               precios) ANTES que crecimiento; si el margen es alto, prioriza crecimiento
-               y escala. Adapta las tácticas al ticket y a la inversión disponibles. No
-               des recomendaciones que ignoren estos números.
+            1. USA LAS CIFRAS del usuario. Cita explícitamente TODOS los datos numéricos que
+               tengas (si ya opera: su margen tras gastos; en TODOS los casos: su ticket
+               promedio y su tamaño de inversión) y ancla los consejos a ellos. NUNCA omitas
+               el ticket ni la inversión, aunque no haya margen. Si el margen es bajo o "Nada",
+               prioriza rentabilidad (costos y precios) ANTES que crecimiento; si el margen es
+               alto, prioriza crecimiento y escala. Adapta las tácticas al ticket y a la
+               inversión disponibles. No des recomendaciones que ignoren estos números.
             2. RESPETA SU NIVEL DE EXPERIENCIA. Si declaró experiencia amplia, ve directo a
                lo estratégico y avanzado y NO expliques lo básico (nada de "entrena a tu
                personal", "haz investigación de mercado" o "define tu concepto" como si
