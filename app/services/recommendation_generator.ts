@@ -32,6 +32,13 @@ export default class RecommendationGenerator {
             nombrar es "Impulso Restaurantero". Si no estás seguro del nombre de algo,
             descríbelo por su función; jamás lo inventes.
 
+            Cuando menciones a un líder o referente (Danny Meyer, René Redzepi, Howard
+            Schultz, Massimo Bottura, etc.), usa SOLO su nombre y la LECCIÓN o principio
+            aplicable a este negocio. Está PROHIBIDO agregar cualquier dato biográfico:
+            nacionalidad, cargo ("chef", "CEO", "fundador"), títulos, fechas, premios o el
+            nombre de sus restaurantes. Nunca afirmes un dato factual de una persona o
+            lugar que podrías equivocar; si dudas, omítelo.
+
             REGLAS DE PERSONALIZACIÓN (obligatorias):
             1. USA LAS CIFRAS del usuario. Cita explícitamente TODOS los datos numéricos que
                tengas (si ya opera: su margen tras gastos; en TODOS los casos: su ticket
@@ -90,6 +97,7 @@ export default class RecommendationGenerator {
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
+      temperature: 0.6,
       messages: [
         {
           role: 'system',
