@@ -14,6 +14,8 @@ import { scrapeWebsite } from '#services/website_scraper_service'
 import { getMobilePageSpeed } from '#services/pagespeed_service'
 import { scoreSeo, scoreGuestExperience } from '#services/website_scoring_service'
 import { buildLeadConfirmationEmailHtml } from '#mails/restaurant_report_lead_email'
+import { buildLocalSearchQueries } from '#services/local_search_queries_service'
+import { checkLocalRanking, type LocalRankingResult } from '#services/dataforseo_service'
 
 const REPORT_FRESHNESS_HOURS = 24
 
@@ -120,27 +122,79 @@ export default class RestaurantReportsController {
       let websiteScrapeError: string | null = null
       let scrape = null as Awaited<ReturnType<typeof scrapeWebsite>> | null
       let mobilePerformanceScore: number | null = null
+      let serpQueries: LocalRankingResult[] = []
+      let serpRankingError: string | null = null
+      let photoUrl: string | null = null
+
+      const parallelTasks: Promise<void>[] = []
+
+      if (details.photoReferences.length > 0) {
+        parallelTasks.push(
+          googlePlaces
+            .resolvePhotoUrl(details.photoReferences[0], 480)
+            .then((url) => {
+              photoUrl = url
+            })
+            .catch((error) => {
+              console.error('Error resolviendo foto principal:', error)
+            })
+        )
+      }
 
       if (details.website) {
-        const [scrapeResult, pageSpeedResult] = await Promise.allSettled([
-          scrapeWebsite(details.website),
-          getMobilePageSpeed(details.website),
-        ])
+        const website = details.website
+        parallelTasks.push(
+          (async () => {
+            const [scrapeResult, pageSpeedResult] = await Promise.allSettled([
+              scrapeWebsite(website),
+              getMobilePageSpeed(website),
+            ])
 
-        if (scrapeResult.status === 'fulfilled') {
-          scrape = scrapeResult.value
-        } else {
-          console.error('Error escaneando el sitio web:', scrapeResult.reason)
-          websiteScrapeError =
-            'No pudimos leer tu sitio web (puede que tu proveedor esté bloqueando el análisis).'
-        }
+            if (scrapeResult.status === 'fulfilled') {
+              scrape = scrapeResult.value
+            } else {
+              console.error('Error escaneando el sitio web:', scrapeResult.reason)
+              websiteScrapeError =
+                'No pudimos leer tu sitio web (puede que tu proveedor esté bloqueando el análisis).'
+            }
 
-        if (pageSpeedResult.status === 'fulfilled') {
-          mobilePerformanceScore = pageSpeedResult.value.mobilePerformanceScore
-        } else {
-          console.error('Error obteniendo PageSpeed:', pageSpeedResult.reason)
-        }
+            if (pageSpeedResult.status === 'fulfilled') {
+              mobilePerformanceScore = pageSpeedResult.value.mobilePerformanceScore
+            } else {
+              console.error('Error obteniendo PageSpeed:', pageSpeedResult.reason)
+            }
+          })()
+        )
       }
+
+      const localSearchQueries = buildLocalSearchQueries(details)
+
+      if (location && localSearchQueries.length > 0) {
+        parallelTasks.push(
+          (async () => {
+            const results = await Promise.allSettled(
+              localSearchQueries.map((query) =>
+                checkLocalRanking(query, location, details.website, details.name)
+              )
+            )
+
+            const fulfilled = results.filter(
+              (result): result is PromiseFulfilledResult<LocalRankingResult> =>
+                result.status === 'fulfilled'
+            )
+
+            if (fulfilled.length === 0) {
+              console.error('Error en todas las consultas SERP:', results)
+              serpRankingError =
+                'No pudimos revisar tu posición en búsquedas locales en este momento.'
+            }
+
+            serpQueries = fulfilled.map((result) => result.value)
+          })()
+        )
+      }
+
+      await Promise.all(parallelTasks)
 
       const { score: scoreSeoResult, issues: seoIssues } = scoreSeo(details, scrape)
       const { score: scoreGuestResult, issues: guestIssues } = scoreGuestExperience(
@@ -180,6 +234,9 @@ export default class RestaurantReportsController {
         seo_issues: seoIssues,
         guest_experience_issues: guestIssues,
         website_scrape_error: websiteScrapeError,
+        serp_queries: serpQueries,
+        serp_ranking_error: serpRankingError,
+        photo_url: photoUrl,
       }
 
       const report = existing

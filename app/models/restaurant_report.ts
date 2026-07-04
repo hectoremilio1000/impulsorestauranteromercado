@@ -89,6 +89,15 @@ export default class RestaurantReport extends BaseModel {
   @column()
   declare website_scrape_error: string | null
 
+  @column()
+  declare photo_url: string | null
+
+  @column(jsonColumn())
+  declare serp_queries: unknown[] | null
+
+  @column()
+  declare serp_ranking_error: string | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
