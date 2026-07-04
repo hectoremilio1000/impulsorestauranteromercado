@@ -32,6 +32,19 @@ export default class RecommendationGenerator {
             nombrar es "Impulso Restaurantero". Si no estás seguro del nombre de algo,
             descríbelo por su función; jamás lo inventes.
 
+            REGLAS DE PERSONALIZACIÓN (obligatorias):
+            1. USA LAS CIFRAS del usuario. Cita explícitamente su margen tras gastos, su
+               ticket promedio y su tamaño de inversión, y ancla los consejos a esos
+               números. Si el margen es bajo o "Nada", prioriza rentabilidad (costos y
+               precios) ANTES que crecimiento; si el margen es alto, prioriza crecimiento
+               y escala. Adapta las tácticas al ticket y a la inversión disponibles. No
+               des recomendaciones que ignoren estos números.
+            2. RESPETA SU NIVEL DE EXPERIENCIA. Si declaró experiencia amplia, ve directo a
+               lo estratégico y avanzado y NO expliques lo básico (nada de "entrena a tu
+               personal", "haz investigación de mercado" o "define tu concepto" como si
+               empezara de cero). Si es ninguna o moderada, sé más didáctico y guía paso a
+               paso.
+
             Con base en estas respuestas, proporciona recomendaciones personalizadas y prácticas que incluyan:
 
             1. **Inspiración Visionaria:**
@@ -39,8 +52,8 @@ export default class RecommendationGenerator {
             - Muestra cómo sus estrategias podrían aplicarse en el negocio dependiendo de ${respuestasTexto}.
 
             2. **Planificación Práctica dependiendo de ${respuestasTexto}:**
-            - Detalla cómo estructurar un plan de trabajo para el primer año.
-            - Incluye pasos específicos como investigación de mercado, definición de productos estrella, y estrategias iniciales de marketing siempre di cuáles y ejemplos prácticos dependiendo de su ${respuestasTexto} adaptándote.
+            - Detalla un plan de trabajo con un horizonte adecuado a su situación. NO asumas que apenas abre: si ya opera, enfócate en optimizar y crecer (no hables de "el primer año" ni de "abrir").
+            - Ajusta la profundidad a su experiencia: si es principiante, incluye pasos fundamentales (definir concepto, estudiar el mercado, productos estrella); si tiene experiencia AMPLIA, OMITE lo básico y ve directo a palancas avanzadas (optimización de costos y margen, pricing, expansión) según ${respuestasTexto}.
 
             3. **Tecnología y Equipamiento Vanguardista dependiendo de ${respuestasTexto}:**
             - Recomienda las herramientas tecnológicas más recientes para optimizar procesos.
@@ -56,7 +69,7 @@ export default class RecommendationGenerator {
                   - Manuales y capacitación con IA (describe varios puntos de cómo te va a ayudar esto a tener un equipo de alto rendimiento para que tengas una operación sumamente estable).
                   - Creación de tu página web con sistema de calendario eficiente (di cómo lo vamos a crear con tecnología de punta para que siempre tengas el mejor ranking e indexación en Google, define estrategias innovadoras que utilizaríamos con tecnología como Next.js o sistemas modernos como Calendly y qué beneficios tiene).
                   - Inventarios inteligentes y monitoreo en tiempo real (cómo te ayudamos a tener mejores inventarios que se adapten a cómo organizas tus compras, etc).
-                  - Financiamiento a tasas bajas (cómo te podríamos ayudar a financiar tu crecimiento, o máquinas para mejorar tu productividad, di algunas máquinas que te podríamos ayudar como hornos Rational o tipo de máquina de café que eleven la experiencia del cliente y cómo te ayudarían).
+                  - Financiamiento a tasas bajas (cómo te podríamos ayudar a financiar tu crecimiento, o maquinaria para mejorar tu productividad; menciona por CATEGORÍA qué equipo podríamos ayudarte a financiar para elevar la experiencia del cliente, sin nombrar marcas).
                   - Programas de lealtad para fidelizar clientes (ayudarte a generar algún programa de lealtad para que tengas clientes felices).
                   - Cómo te ayudaríamos a monitorear tu negocio para que no tengas robo hormiga, entre otras cuestiones.
 
