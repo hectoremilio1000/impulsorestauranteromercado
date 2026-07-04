@@ -58,6 +58,7 @@ export default await Env.create(new URL(`file://${appRootPath}/`), {
   SMTP_PORT: Env.schema.string(),
   SMTP_USERNAME: Env.schema.string(),
   SMTP_PASSWORD: Env.schema.string(),
+  SMTP_FROM: Env.schema.string(),
 
   // --- Mercadopago
   MP_ACCESS_TOKEN: Env.schema.string(),
@@ -74,6 +75,9 @@ export default await Env.create(new URL(`file://${appRootPath}/`), {
   CUSTOMER_ID: Env.schema.string(),
   REDIRECT_URL: Env.schema.string(),
   REDIRECT_URL_FRONT: Env.schema.string(),
+
+  // --- Google Places (Reporte AI de restaurantes)
+  GOOGLE_PLACES_API_KEY: Env.schema.string(),
 
   // --- Calendly
   CALENDLY_CLIENT_ID: Env.schema.string(),
