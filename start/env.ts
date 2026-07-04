@@ -79,6 +79,10 @@ export default await Env.create(new URL(`file://${appRootPath}/`), {
   // --- Google Places (Reporte AI de restaurantes)
   GOOGLE_PLACES_API_KEY: Env.schema.string(),
 
+  // --- DataForSEO (Fase 3: rankings SERP locales del Reporte AI)
+  DATAFORSEO_LOGIN: Env.schema.string(),
+  DATAFORSEO_PASSWORD: Env.schema.string(),
+
   // --- Calendly
   CALENDLY_CLIENT_ID: Env.schema.string(),
   CALENDLY_CLIENT_SECRET: Env.schema.string(),
