@@ -8,6 +8,58 @@ const CATEGORY_PHRASES: Record<string, string[]> = {
   night_club: ['antro'],
 }
 
+// Google Place Types incluye subtipos de cocina para algunos negocios (si el
+// dueño los configuró así en su Perfil de Google Business). Cuando están
+// presentes son la señal más confiable de tipo de cocina.
+const CUISINE_TYPE_PHRASES: Record<string, string> = {
+  mexican_restaurant: 'comida mexicana',
+  italian_restaurant: 'comida italiana',
+  chinese_restaurant: 'comida china',
+  japanese_restaurant: 'comida japonesa',
+  sushi_restaurant: 'sushi',
+  thai_restaurant: 'comida tailandesa',
+  indian_restaurant: 'comida india',
+  french_restaurant: 'comida francesa',
+  spanish_restaurant: 'comida española',
+  mediterranean_restaurant: 'comida mediterránea',
+  greek_restaurant: 'comida griega',
+  korean_restaurant: 'comida coreana',
+  vietnamese_restaurant: 'comida vietnamita',
+  seafood_restaurant: 'mariscos',
+  steak_house: 'carnes asadas',
+  pizza_restaurant: 'pizza',
+  hamburger_restaurant: 'hamburguesas',
+  breakfast_restaurant: 'desayunos',
+  brunch_restaurant: 'brunch',
+  vegetarian_restaurant: 'comida vegetariana',
+  vegan_restaurant: 'comida vegana',
+  fast_food_restaurant: 'comida rápida',
+  barbecue_restaurant: 'barbacoa',
+}
+
+// Muchos negocios en México sólo traen el `types` genérico ("restaurant")
+// sin subtipo de cocina en Google. Como respaldo, inferimos del nombre del
+// negocio mismo (no de una descripción: Places no expone una de forma
+// confiable) buscando palabras que delatan el tipo de comida.
+const NAME_KEYWORD_PHRASES: Array<{ pattern: RegExp; phrase: string }> = [
+  { pattern: /taquer|tacos?\b/, phrase: 'tacos' },
+  { pattern: /birria/, phrase: 'birria' },
+  { pattern: /sushi/, phrase: 'sushi' },
+  { pattern: /pizzer|pizza/, phrase: 'pizza' },
+  { pattern: /marisc/, phrase: 'mariscos' },
+  { pattern: /asador|parrilla|carnes/, phrase: 'carnes asadas' },
+  { pattern: /cantina/, phrase: 'cantina' },
+  { pattern: /panader/, phrase: 'panadería' },
+  { pattern: /cafeter|café|cafe\b/, phrase: 'café' },
+  { pattern: /hamburgues/, phrase: 'hamburguesas' },
+  { pattern: /pollo/, phrase: 'pollo' },
+  { pattern: /trattoria|italian/, phrase: 'comida italiana' },
+]
+
+function normalize(value: string): string {
+  return value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+}
+
 function deriveZone(formattedAddress: string | null): string | null {
   if (!formattedAddress) return null
 
@@ -36,10 +88,29 @@ function deriveZone(formattedAddress: string | null): string | null {
 }
 
 /**
- * Arma frases de búsqueda locales realistas combinando la categoría del
- * negocio (de Google Places `types`) con su zona (colonia/ciudad extraída
- * de formatted_address), para checar en qué posición aparece el negocio
- * cuando alguien busca eso en Google.
+ * Intenta inferir el tipo de cocina/especialidad del negocio: primero desde
+ * los subtipos de Google Place Types (más confiable si el dueño los
+ * configuró), y si no hay ninguno, desde palabras clave en el nombre del
+ * negocio (ej. "Tacos", "Sushi", "Pizzería").
+ */
+function inferCuisinePhrase(name: string, types: string[]): string | null {
+  for (const type of types) {
+    if (CUISINE_TYPE_PHRASES[type]) return CUISINE_TYPE_PHRASES[type]
+  }
+
+  const normalizedName = normalize(name)
+  for (const { pattern, phrase } of NAME_KEYWORD_PHRASES) {
+    if (pattern.test(normalizedName)) return phrase
+  }
+
+  return null
+}
+
+/**
+ * Arma frases de búsqueda locales realistas combinando el tipo de cocina
+ * (si se puede inferir) o la categoría general del negocio con su zona
+ * (colonia/ciudad extraída de formatted_address), para checar en qué
+ * posición aparece el negocio cuando alguien busca eso en Google.
  */
 export function buildLocalSearchQueries(details: {
   name: string
@@ -50,13 +121,16 @@ export function buildLocalSearchQueries(details: {
   if (!zone) return []
 
   const categoryPhrases = details.types.flatMap((type) => CATEGORY_PHRASES[type] ?? [])
-  const phrases = categoryPhrases.length > 0 ? categoryPhrases : ['restaurante']
+  const genericPhrase = categoryPhrases[0] ?? 'restaurante'
+  const cuisinePhrase = inferCuisinePhrase(details.name, details.types)
 
   const queries: string[] = []
-  phrases.slice(0, 2).forEach((phrase) => {
-    queries.push(`mejor ${phrase} en ${zone}`)
-  })
-  queries.push(`${phrases[0]} cerca de ${zone}`)
+
+  if (cuisinePhrase && cuisinePhrase !== genericPhrase) {
+    queries.push(`mejor ${cuisinePhrase} en ${zone}`)
+  }
+  queries.push(`mejor ${genericPhrase} en ${zone}`)
+  queries.push(`${cuisinePhrase ?? genericPhrase} cerca de ${zone}`)
 
   return Array.from(new Set(queries)).slice(0, 3)
 }
