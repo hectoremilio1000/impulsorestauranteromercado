@@ -1,6 +1,5 @@
-import env from '#start/env'
 import type { HttpContext } from '@adonisjs/core/http'
-import mail from '@adonisjs/mail/services/main'
+import { sendEmail } from '#services/resend_mailer'
 
 export default class TestMailsController {
   public async index({ request }: HttpContext) {
@@ -8,8 +7,10 @@ export default class TestMailsController {
     console.log(data)
 
     try {
-      await mail.send((message) => {
-        message.to(data.email).from(env.get('SMTP_USERNAME')).subject(data.message)
+      await sendEmail({
+        to: data.email,
+        subject: data.message,
+        html: `<p>${data.message}</p>`,
       })
 
       return {
@@ -32,8 +33,10 @@ export default class TestMailsController {
     console.log(data)
 
     try {
-      await mail.send((message) => {
-        message.to(data.email).from(env.get('SMTP_USERNAME')).subject(data.message)
+      await sendEmail({
+        to: data.email,
+        subject: data.message,
+        html: `<p>${data.message}</p>`,
       })
 
       return {

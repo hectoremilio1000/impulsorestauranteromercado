@@ -353,6 +353,10 @@ router
   .post('/api/prospectswebsite', [ProspectsController, 'storeWebSite'])
   .as('prospect.storeWebSite')
 
+router
+  .post('/api/prospects-growthsuite', [ProspectsController, 'storeGrowthsuite'])
+  .as('prospect.storeGrowthsuite')
+
 //RUTAS PARA EL REPORTE AI DE RESTAURANTES (Google Places + scoring)
 
 router
