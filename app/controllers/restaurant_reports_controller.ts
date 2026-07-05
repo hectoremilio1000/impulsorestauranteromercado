@@ -266,7 +266,9 @@ export default class RestaurantReportsController {
         return response.notFound({ status: 'error', message: 'Reporte no encontrado.' })
       }
 
-      return response.ok({ status: 'success', data: report })
+      const hasLead = await this.reportHasLead(report.id)
+
+      return response.ok({ status: 'success', data: { ...report.serialize(), hasLead } })
     } catch (error) {
       console.error('Error en RestaurantReportsController.show:', error)
       return response.internalServerError({
@@ -317,5 +319,17 @@ export default class RestaurantReportsController {
         error: error.message,
       })
     }
+  }
+
+  /**
+   * Un reporte ya "desbloqueado" (con lead guardado) debe verse completo
+   * desde cualquier dispositivo/navegador, no sólo desde el que hizo el
+   * desbloqueo original (eso vivía sólo en localStorage del navegador).
+   */
+  private async reportHasLead(reportId: number): Promise<boolean> {
+    const count = await RestaurantReportLead.query()
+      .where('restaurant_report_id', reportId)
+      .count('* as total')
+    return Number(count[0].$extras.total) > 0
   }
 }

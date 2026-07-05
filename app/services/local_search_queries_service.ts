@@ -106,11 +106,20 @@ function inferCuisinePhrase(name: string, types: string[]): string | null {
   return null
 }
 
+// Plantillas de frase — combinadas con cada término (cocina/categoría/casual)
+// para cubrir varias formas reales en que la gente busca en Google.
+const QUERY_TEMPLATES: Array<(term: string, zone: string) => string> = [
+  (term, zone) => `mejor ${term} en ${zone}`,
+  (term, zone) => `${term} cerca de ${zone}`,
+  (term, zone) => `${term} en ${zone}`,
+]
+
 /**
- * Arma frases de búsqueda locales realistas combinando el tipo de cocina
- * (si se puede inferir) o la categoría general del negocio con su zona
- * (colonia/ciudad extraída de formatted_address), para checar en qué
- * posición aparece el negocio cuando alguien busca eso en Google.
+ * Arma frases de búsqueda locales realistas combinando distintos términos
+ * (tipo de cocina inferido, categoría general del negocio, y un término
+ * casual como "comida") con distintas plantillas de frase, sobre la zona
+ * (colonia/ciudad extraída de formatted_address). Hasta 9 combinaciones,
+ * para cubrir varios ángulos de búsqueda por reporte (como hace Owner).
  */
 export function buildLocalSearchQueries(details: {
   name: string
@@ -124,13 +133,11 @@ export function buildLocalSearchQueries(details: {
   const genericPhrase = categoryPhrases[0] ?? 'restaurante'
   const cuisinePhrase = inferCuisinePhrase(details.name, details.types)
 
-  const queries: string[] = []
+  const terms = Array.from(new Set([cuisinePhrase, genericPhrase, 'comida'].filter(Boolean)))
 
-  if (cuisinePhrase && cuisinePhrase !== genericPhrase) {
-    queries.push(`mejor ${cuisinePhrase} en ${zone}`)
-  }
-  queries.push(`mejor ${genericPhrase} en ${zone}`)
-  queries.push(`${cuisinePhrase ?? genericPhrase} cerca de ${zone}`)
+  const queries = QUERY_TEMPLATES.flatMap((template) =>
+    terms.map((term) => template(term as string, zone))
+  )
 
-  return Array.from(new Set(queries)).slice(0, 3)
+  return Array.from(new Set(queries)).slice(0, 9)
 }
