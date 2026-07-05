@@ -57,7 +57,7 @@ export default await Env.create(new URL(`file://${appRootPath}/`), {
   SMTP_HOST: Env.schema.string(),
   SMTP_PORT: Env.schema.number(),
   SMTP_SECURE: Env.schema.boolean(),
-  SMTP_FROM: Env.schema.string.optional(),
+  SMTP_FROM: Env.schema.string(),
   SMTP_USERNAME: Env.schema.string(),
   SMTP_PASSWORD: Env.schema.string(),
 
@@ -80,6 +80,13 @@ export default await Env.create(new URL(`file://${appRootPath}/`), {
   CUSTOMER_ID: Env.schema.string(),
   REDIRECT_URL: Env.schema.string(),
   REDIRECT_URL_FRONT: Env.schema.string(),
+
+  // --- Google Places (Reporte AI de restaurantes)
+  GOOGLE_PLACES_API_KEY: Env.schema.string(),
+
+  // --- DataForSEO (Fase 3: rankings SERP locales del Reporte AI)
+  DATAFORSEO_LOGIN: Env.schema.string(),
+  DATAFORSEO_PASSWORD: Env.schema.string(),
 
   // --- Calendly
   CALENDLY_CLIENT_ID: Env.schema.string(),
