@@ -67,10 +67,19 @@ export async function checkLocalRanking(
 
   // Cada negocio del "local pack" (mapa) es su propio ítem con
   // type:'local_pack' (no un contenedor con una lista anidada), cada uno
-  // trae su propio domain/url/rank_absolute — igual que los orgánicos.
+  // trae su propio domain/url — igual que los orgánicos.
+  //
+  // Usamos rank_group (posición SOLO dentro de su propio tipo de resultado)
+  // en vez de rank_absolute (posición contando TODO en la página: mapa,
+  // video, "también se buscó", preguntas frecuentes, etc.). rank_absolute
+  // infla el número — confirmado con datos reales: un negocio que es el 4to
+  // resultado orgánico real (rank_group=4) aparecía como "#10" o "#11" con
+  // rank_absolute, porque contaba de más los 3 del mapa + otros bloques que
+  // no son resultados de verdad. rank_group es lo que un humano cuenta
+  // contando "1er link azul, 2do link azul...".
   const localPackBusinesses = items
     .filter((item) => item.type === 'local_pack')
-    .sort((a, b) => (a.rank_absolute ?? 0) - (b.rank_absolute ?? 0))
+    .sort((a, b) => (a.rank_group ?? 0) - (b.rank_group ?? 0))
 
   let mapPackTargetRank: number | null = null
   const mapPackMatchByDomain = targetHostname
@@ -81,7 +90,7 @@ export async function checkLocalRanking(
     : null
 
   if (mapPackMatchByDomain) {
-    mapPackTargetRank = mapPackMatchByDomain.rank_absolute ?? null
+    mapPackTargetRank = mapPackMatchByDomain.rank_group ?? null
   } else {
     // Sin sitio web (o no coincidió), intenta por nombre del negocio.
     const mapPackMatchByName = localPackBusinesses.find((business) => {
@@ -92,10 +101,12 @@ export async function checkLocalRanking(
           targetName.toLowerCase().includes(businessName))
       )
     })
-    mapPackTargetRank = mapPackMatchByName?.rank_absolute ?? null
+    mapPackTargetRank = mapPackMatchByName?.rank_group ?? null
   }
 
-  const organicItems = items.filter((item) => item.type === 'organic')
+  const organicItems = items
+    .filter((item) => item.type === 'organic')
+    .sort((a, b) => (a.rank_group ?? 0) - (b.rank_group ?? 0))
 
   let organicTargetRank: number | null = null
   if (targetHostname) {
@@ -104,7 +115,7 @@ export async function checkLocalRanking(
       return domain && String(domain).toLowerCase().includes(targetHostname.toLowerCase())
     })
     if (match) {
-      organicTargetRank = match.rank_absolute ?? match.rank_group ?? null
+      organicTargetRank = match.rank_group ?? null
     }
   }
 
