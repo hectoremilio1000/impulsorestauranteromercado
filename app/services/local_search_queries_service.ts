@@ -60,8 +60,12 @@ function normalize(value: string): string {
   return value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
 }
 
-function deriveZone(formattedAddress: string | null): string | null {
-  if (!formattedAddress) return null
+function parseAddressParts(formattedAddress: string | null): {
+  colonia: string | null
+  city: string | null
+  firstCandidate: string | null
+} {
+  if (!formattedAddress) return { colonia: null, city: null, firstCandidate: null }
 
   const parts = formattedAddress
     .split(',')
@@ -72,19 +76,46 @@ function deriveZone(formattedAddress: string | null): string | null {
   const candidates = parts.slice(0, -1)
 
   // candidates[1] suele ser la colonia (ej. "Las Fuentes") y candidates[2]
-  // trae el CP pegado a la ciudad (ej. "88710 Reynosa") — la ciudad sola es
-  // clave para que la búsqueda simulada dé resultados relevantes (probado:
-  // "mejor restaurante en Las Fuentes" da resultados distintos a "mejor
-  // restaurante en Las Fuentes, Reynosa").
+  // trae el CP pegado a la ciudad (ej. "88710 Reynosa").
   const colonia = candidates[1] ?? null
   const cityRaw = candidates[2] ?? null
   const city = cityRaw ? cityRaw.replace(/^\d{4,6}\s*/, '').trim() || null : null
 
+  return { colonia, city, firstCandidate: candidates[0] ?? null }
+}
+
+function deriveZone(formattedAddress: string | null): string | null {
+  const { colonia, city, firstCandidate } = parseAddressParts(formattedAddress)
+
+  // La zona "colonia, ciudad" es clave para que la búsqueda simulada dé
+  // resultados locales relevantes (probado: "mejor restaurante en Las
+  // Fuentes" da resultados distintos a "mejor restaurante en Las Fuentes,
+  // Reynosa").
   if (colonia && city && colonia.toLowerCase() !== city.toLowerCase()) {
     return `${colonia}, ${city}`
   }
 
-  return colonia ?? city ?? candidates[0] ?? null
+  return colonia ?? city ?? firstCandidate
+}
+
+// Colonia (o ciudad si no hay colonia), para las frases cortas de volumen
+// de búsqueda — ver buildVolumeQueries(). OJO: en direcciones de Ciudad de
+// México, candidates[2] (lo que usamos como "city" en parseAddressParts) es
+// en realidad la ALCALDÍA (ej. "Cuauhtémoc"), no una ciudad — y una
+// alcaldía cubre muchas colonias distintas (Condesa, Hipódromo, Roma...).
+// Confirmado con un caso real: dos negocios en colonias distintas pero la
+// misma alcaldía terminaban generando la MISMA frase corta ("bar
+// Cuauhtémoc") y por lo tanto el mismo volumen/posición/pérdida estimada,
+// aunque fueran negocios genuinamente distintos. Preferir la colonia evita
+// este falso empate.
+function deriveVolumeZone(formattedAddress: string | null): string | null {
+  const { colonia, city, firstCandidate } = parseAddressParts(formattedAddress)
+  const zone = colonia ?? city ?? firstCandidate
+  // La gente no dice "bar Colonia Condesa", dice "bar Condesa" — Google le
+  // pega el prefijo genérico "Colonia"/"Col." al nombre de la colonia en el
+  // formatted_address, y eso puede evitar que la frase coincida con cómo
+  // Google Ads tiene registrado el volumen real de búsqueda.
+  return zone ? zone.replace(/^col(?:onia)?\.?\s+/i, '').trim() || zone : zone
 }
 
 /**
@@ -140,4 +171,49 @@ export function buildLocalSearchQueries(details: {
   )
 
   return Array.from(new Set(queries)).slice(0, 9)
+}
+
+// Plantillas cortas — sin "en"/"cerca de" (esas preposiciones + zona
+// completa reducen las probabilidades de que Google Ads tenga volumen
+// registrado para la frase exacta).
+const VOLUME_QUERY_TEMPLATES: Array<(term: string, zone: string) => string> = [
+  (term, zone) => `${term} ${zone}`,
+  (term, zone) => `mejor ${term} ${zone}`,
+]
+
+/**
+ * Frases CORTAS (término + sólo colonia/ciudad, sin "en"/"cerca de") para el
+ * cálculo de pérdida de ventas: a diferencia de las 9 frases hiperlocales de
+ * buildLocalSearchQueries (buenas para medir posición real, pero DEMASIADO
+ * específicas para tener volumen de búsqueda medible en Google Ads —
+ * confirmado probando la API real: "mejor cantina en Hipódromo, Cuauhtémoc"
+ * da volumen null, pero "cantina condesa" da 480), estas frases cortas sí
+ * tienen más chance de tener volumen real y se usan tanto para medir
+ * posición como volumen de la MISMA frase.
+ *
+ * Se generan varias combinaciones (hasta 3 términos x 2 formas = 6) en vez
+ * de sólo 1-2, porque en la práctica muchas de estas frases individuales NO
+ * tienen dato en Google Ads (colonias chicas, palabras poco buscadas) — con
+ * más frases hay más oportunidades de que al menos varias sí tengan datos
+ * reales, en vez de que el cálculo dependa de una sola coincidencia.
+ */
+export function buildVolumeQueries(details: {
+  name: string
+  types: string[]
+  formatted_address: string | null
+}): string[] {
+  const zone = deriveVolumeZone(details.formatted_address)
+  if (!zone) return []
+
+  const categoryPhrases = details.types.flatMap((type) => CATEGORY_PHRASES[type] ?? [])
+  const genericPhrase = categoryPhrases[0] ?? 'restaurante'
+  const cuisinePhrase = inferCuisinePhrase(details.name, details.types)
+
+  const terms = Array.from(new Set([cuisinePhrase, genericPhrase, 'comida'].filter(Boolean)))
+
+  const queries = VOLUME_QUERY_TEMPLATES.flatMap((template) =>
+    terms.map((term) => template(term as string, zone))
+  )
+
+  return Array.from(new Set(queries)).slice(0, 6)
 }

@@ -14,8 +14,10 @@ import { scrapeWebsite } from '#services/website_scraper_service'
 import { getMobilePageSpeed } from '#services/pagespeed_service'
 import { scoreSeo, scoreGuestExperience } from '#services/website_scoring_service'
 import { buildLeadConfirmationEmailHtml } from '#mails/restaurant_report_lead_email'
-import { buildLocalSearchQueries } from '#services/local_search_queries_service'
+import { buildLocalSearchQueries, buildVolumeQueries } from '#services/local_search_queries_service'
 import { checkLocalRanking, type LocalRankingResult } from '#services/dataforseo_service'
+import { getSearchVolumes } from '#services/dataforseo_keyword_volume_service'
+import { estimarPerdidaMensual } from '#services/loss_estimation_service'
 
 const REPORT_FRESHNESS_HOURS = 24
 
@@ -125,6 +127,8 @@ export default class RestaurantReportsController {
       let serpQueries: LocalRankingResult[] = []
       let serpRankingError: string | null = null
       let photoUrl: string | null = null
+      let volumeQueryResults: (LocalRankingResult & { searchVolume: number | null })[] = []
+      let volumeQueryError: string | null = null
 
       const parallelTasks: Promise<void>[] = []
 
@@ -194,7 +198,49 @@ export default class RestaurantReportsController {
         )
       }
 
+      // Frases CORTAS (sólo ciudad, sin colonia) para el cálculo de pérdida
+      // de ventas: las 9 de arriba son demasiado específicas para tener
+      // volumen de búsqueda medible en Google Ads (confirmado con la API
+      // real). Aquí medimos posición Y volumen de las MISMAS frases cortas,
+      // para que el cálculo de pérdida combine datos consistentes.
+      const volumeQueries = buildVolumeQueries(details)
+
+      if (location && volumeQueries.length > 0) {
+        parallelTasks.push(
+          (async () => {
+            const [serpResults, volumeMap] = await Promise.all([
+              Promise.allSettled(
+                volumeQueries.map((query) =>
+                  checkLocalRanking(query, location, details.website, details.name)
+                )
+              ),
+              getSearchVolumes(volumeQueries).catch((error) => {
+                console.error('Error obteniendo volumen de búsqueda:', error)
+                return new Map<string, number | null>()
+              }),
+            ])
+
+            const fulfilled = serpResults.filter(
+              (result): result is PromiseFulfilledResult<LocalRankingResult> =>
+                result.status === 'fulfilled'
+            )
+
+            if (fulfilled.length === 0) {
+              console.error('Error en todas las consultas de volumen:', serpResults)
+              volumeQueryError = 'No pudimos estimar tu volumen de búsqueda en este momento.'
+            }
+
+            volumeQueryResults = fulfilled.map((result) => ({
+              ...result.value,
+              searchVolume: volumeMap.get(result.value.query) ?? null,
+            }))
+          })()
+        )
+      }
+
       await Promise.all(parallelTasks)
+
+      const lossEstimate = estimarPerdidaMensual(volumeQueryResults, details.price_level)
 
       const { score: scoreSeoResult, issues: seoIssues } = scoreSeo(details, scrape)
       const { score: scoreGuestResult, issues: guestIssues } = scoreGuestExperience(
@@ -237,6 +283,10 @@ export default class RestaurantReportsController {
         serp_queries: serpQueries,
         serp_ranking_error: serpRankingError,
         photo_url: photoUrl,
+        volume_queries: volumeQueryResults,
+        volume_query_error: volumeQueryError,
+        estimated_monthly_loss: lossEstimate.estimatedMonthlyLoss,
+        loss_breakdown: lossEstimate,
       }
 
       const report = existing

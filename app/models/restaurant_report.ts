@@ -98,6 +98,18 @@ export default class RestaurantReport extends BaseModel {
   @column()
   declare serp_ranking_error: string | null
 
+  @column(jsonColumn())
+  declare volume_queries: unknown[] | null
+
+  @column()
+  declare volume_query_error: string | null
+
+  @column()
+  declare estimated_monthly_loss: number | null
+
+  @column(jsonColumn())
+  declare loss_breakdown: Record<string, unknown> | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
