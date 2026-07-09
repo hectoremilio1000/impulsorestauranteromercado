@@ -45,10 +45,10 @@ export const CTR_MAPA_SIN_PACK = 0
  * de búsquedas locales terminan en una compra). Usamos un valor
  * conservador dentro de ese rango.
  */
-export const CONVERSION_CLICK_A_VISITA = 0.2
+export const CONVERSION_CLICK_A_VISITA = 0.28
 
 /** Personas promedio por mesa/pedido. Estándar de la industria restaurantera. */
-export const PERSONAS_POR_MESA = 3
+export const PERSONAS_POR_MESA = 4
 
 /**
  * Ticket promedio por persona (MXN) según el price_level de Google Places
@@ -71,3 +71,50 @@ export const TICKET_DEFAULT_MXN = 300
  * mitad para ser justos").
  */
 export const FACTOR_CONSERVADOR = 0.5
+
+/**
+ * FRENTE A — Captura ponderada por nivel de zona.
+ *
+ * La misma demanda ("cerveza") se busca a 3 niveles geográficos, pero entre
+ * más amplia la zona, MENOS de esa demanda le toca realmente a un solo
+ * negocio (el que busca "cerveza CDMX" puede estar del otro lado de la
+ * ciudad). Ponderamos la pérdida de cada keyword por el nivel de su zona:
+ *  - colonia: 1.0  (tu cliente natural, a la vuelta)
+ *  - alcaldía: 0.40 (parte cae en tu radio, parte no)
+ *  - ciudad: 0.04  (una fracción mínima llega hasta ti)
+ */
+export const ZONE_WEIGHTS = {
+  colonia: 1.0,
+  alcaldia: 0.4,
+  ciudad: 0.04,
+} as const
+
+export type ZoneLevel = keyof typeof ZONE_WEIGHTS
+
+/**
+ * FRENTE B — Multiplicador de redes (ESTIMADO, no medido).
+ *
+ * La base Google es medida e imposible de tumbar. Encima estimamos el
+ * negocio que se pierde en redes (Instagram, TikTok, Facebook) con UN solo
+ * multiplicador fijo, igual para todas las redes, aplicado AL FINAL sobre la
+ * base sana — NUNCA antes. Se presenta SIEMPRE separado del número medido.
+ */
+export const MULTIPLICADOR_REDES = 4
+
+/**
+ * FRENTE B — Techo físico. Manda sobre el ×4: por muy alto que dé el
+ * estimado de redes, un negocio no puede facturar más de lo que físicamente
+ * cabe. Techo = factorTamaño × turnos/día × días/mes × ticket, con clamp.
+ *
+ * `factorTamano` NO es aforo real: es un proxy de "qué tan establecido/
+ * concurrido" está el negocio, medido por su # de reseñas (las reseñas miden
+ * antigüedad y tráfico, no capacidad física). Solo sirve para orden de
+ * magnitud. La precisión real vendría de preguntarle el aforo al dueño.
+ */
+export const TURNOS_POR_DIA = 2
+export const DIAS_OPERACION_MES = 26
+export const FACTOR_TAMANO_BASE = 40
+export const FACTOR_TAMANO_MAX = 120
+export const RESENAS_POR_UNIDAD_TAMANO = 25
+export const TECHO_MIN_MXN = 500_000
+export const TECHO_MAX_MXN = 3_000_000

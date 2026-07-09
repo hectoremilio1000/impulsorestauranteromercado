@@ -99,6 +99,9 @@ export default class RestaurantReport extends BaseModel {
   declare serp_ranking_error: string | null
 
   @column(jsonColumn())
+  declare search_competitors: unknown[] | null
+
+  @column(jsonColumn())
   declare volume_queries: unknown[] | null
 
   @column()
