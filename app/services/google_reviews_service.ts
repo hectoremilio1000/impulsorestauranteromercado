@@ -38,7 +38,9 @@ export async function postWorstReviewsTask(placeId: string): Promise<string | nu
           location_code: LOCATION_MEXICO,
           language_code: 'es',
           sort_by: 'newest',
-          depth: 40,
+          // Traemos 70 reseñas recientes para tener suficientes malas de dónde
+          // escoger (luego filtramos ≤3★ y ordenamos por rating + recencia).
+          depth: 70,
           priority: 2,
         },
       ],
@@ -78,7 +80,12 @@ export async function getWorstReviews(taskId: string, limit = 4): Promise<WorstR
           r.rating.value <= 3 &&
           (r.review_text ?? '').trim().length >= 15
       )
-      .sort((a, b) => a.rating.value - b.rating.value) // las más críticas primero
+      // Prioriza por RATING (las más críticas primero) y, a igual rating, por
+      // RECENCIA (la más nueva primero).
+      .sort((a, b) => {
+        if (a.rating.value !== b.rating.value) return a.rating.value - b.rating.value
+        return String(b.timestamp ?? '').localeCompare(String(a.timestamp ?? ''))
+      })
       .slice(0, limit)
       .map((r) => ({
         authorName: r.profile_name ?? 'Cliente',
