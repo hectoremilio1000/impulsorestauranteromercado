@@ -99,15 +99,18 @@ export type ZoneLevel = keyof typeof ZONE_WEIGHTS
  * multiplicador fijo, igual para todas las redes, aplicado AL FINAL sobre la
  * base sana — NUNCA antes. Se presenta SIEMPRE separado del número medido.
  */
-export const MULTIPLICADOR_REDES = 3
-
 /**
- * Restaurantes GRANDES (base medida muy alta): con el ×3 normal, su estimado se
- * pasaría del techo y TODOS saldrían topados en $3M (se ven iguales). Para que
- * varíen, arriba de este umbral de base medida usan un multiplicador menor.
+ * Multiplicador de redes ESCALONADO por tamaño de la base medida:
+ *  - CHICOS (medido < $100k):   ×4  (su base es chica, el estimado de redes pesa más)
+ *  - MEDIOS ($100k – $1M):      ×3
+ *  - GRANDES (medido > $1M):    ×2  (para que no topen todos en el techo y varíen)
+ * El orden importa: se evalúa grande → chico → medio (default).
  */
-export const UMBRAL_MEDIDO_GRANDE_MXN = 1_000_000
+export const MULTIPLICADOR_REDES = 3 // medio (default)
+export const MULTIPLICADOR_REDES_CHICO = 4
 export const MULTIPLICADOR_REDES_GRANDE = 2
+export const UMBRAL_MEDIDO_CHICO_MXN = 100_000
+export const UMBRAL_MEDIDO_GRANDE_MXN = 1_000_000
 
 /**
  * FRENTE B — Techo físico. Manda sobre el ×4: por muy alto que dé el
@@ -124,5 +127,5 @@ export const DIAS_OPERACION_MES = 26
 export const FACTOR_TAMANO_BASE = 40
 export const FACTOR_TAMANO_MAX = 120
 export const RESENAS_POR_UNIDAD_TAMANO = 25
-export const TECHO_MIN_MXN = 500_000
+export const TECHO_MIN_MXN = 800_000
 export const TECHO_MAX_MXN = 3_000_000

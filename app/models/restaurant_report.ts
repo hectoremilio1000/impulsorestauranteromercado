@@ -113,6 +113,12 @@ export default class RestaurantReport extends BaseModel {
   @column(jsonColumn())
   declare loss_breakdown: Record<string, unknown> | null
 
+  @column()
+  declare reviews_task_id: string | null
+
+  @column(jsonColumn())
+  declare worst_reviews: unknown[] | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

@@ -24,6 +24,7 @@ import { getSearchVolumes } from '#services/dataforseo_keyword_volume_service'
 import { estimarPerdidaMensual } from '#services/loss_estimation_service'
 import { verifyRecaptcha } from '#services/recaptcha_service'
 import { resolveSearchCompetitors } from '#services/search_competitors_service'
+import { postWorstReviewsTask, getWorstReviews } from '#services/google_reviews_service'
 
 const REPORT_FRESHNESS_HOURS = 24
 
@@ -139,8 +140,20 @@ export default class RestaurantReportsController {
         weight?: number
       })[] = []
       let volumeQueryError: string | null = null
+      let reviewsTaskId: string | null = null
 
       const parallelTasks: Promise<void>[] = []
+
+      // Dispara (async, best-effort) la tarea de reseñas de DataForSEO. Tarda
+      // ~1-2 min, así que sólo guardamos el task_id ahora y las peores reseñas
+      // se recogen después en `show` (cuando el usuario ya llegó al reporte).
+      parallelTasks.push(
+        postWorstReviewsTask(placeId)
+          .then((id) => {
+            reviewsTaskId = id
+          })
+          .catch(() => {})
+      )
 
       if (details.photoReferences.length > 0) {
         parallelTasks.push(
@@ -332,6 +345,8 @@ export default class RestaurantReportsController {
         volume_query_error: volumeQueryError,
         estimated_monthly_loss: lossEstimate.estimatedMonthlyLoss,
         loss_breakdown: lossEstimate,
+        reviews_task_id: reviewsTaskId,
+        worst_reviews: null,
       }
 
       const report = existing
@@ -373,6 +388,17 @@ export default class RestaurantReportsController {
       }
 
       const hasLead = await this.reportHasLead(report.id)
+
+      // Recoge las peores reseñas si la tarea async de DataForSEO ya terminó y
+      // aún no están cacheadas. Si sigue en cola, no bloquea (se reintenta en la
+      // siguiente carga del reporte).
+      if (report.worst_reviews == null && report.reviews_task_id) {
+        const worst = await getWorstReviews(report.reviews_task_id).catch(() => null)
+        if (worst != null) {
+          report.worst_reviews = worst
+          await report.save()
+        }
+      }
 
       return response.ok({ status: 'success', data: { ...report.serialize(), hasLead, expired: false } })
     } catch (error) {
