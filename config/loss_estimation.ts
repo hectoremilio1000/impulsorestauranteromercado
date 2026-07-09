@@ -101,14 +101,16 @@ export type ZoneLevel = keyof typeof ZONE_WEIGHTS
  */
 /**
  * Multiplicador de redes ESCALONADO por tamaño de la base medida:
- *  - CHICOS (medido < $100k):   ×4  (su base es chica, el estimado de redes pesa más)
+ *  - MICRO (medido < $50k):     ×10 (base muy chica: el estimado de redes pesa mucho más)
+ *  - CHICOS ($50k – $100k):     ×4
  *  - MEDIOS ($100k – $1M):      ×3
  *  - GRANDES (medido > $1M):    ×2  (para que no topen todos en el techo y varíen)
- * El orden importa: se evalúa grande → chico → medio (default).
  */
-export const MULTIPLICADOR_REDES = 3 // medio (default)
-export const MULTIPLICADOR_REDES_CHICO = 4
-export const MULTIPLICADOR_REDES_GRANDE = 2
+export const MULTIPLICADOR_REDES = 3 // medio ($100k – $1M)
+export const MULTIPLICADOR_REDES_CHICO = 4 // $50k – $100k
+export const MULTIPLICADOR_REDES_MICRO = 10 // < $50k
+export const MULTIPLICADOR_REDES_GRANDE = 2 // > $1M
+export const UMBRAL_MEDIDO_MICRO_MXN = 50_000
 export const UMBRAL_MEDIDO_CHICO_MXN = 100_000
 export const UMBRAL_MEDIDO_GRANDE_MXN = 1_000_000
 
