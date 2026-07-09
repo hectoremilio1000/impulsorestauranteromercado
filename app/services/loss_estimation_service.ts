@@ -10,8 +10,10 @@ import {
   TICKET_DEFAULT_MXN,
   FACTOR_CONSERVADOR,
   MULTIPLICADOR_REDES,
-  UMBRAL_MEDIDO_GRANDE_MXN,
+  MULTIPLICADOR_REDES_CHICO,
   MULTIPLICADOR_REDES_GRANDE,
+  UMBRAL_MEDIDO_CHICO_MXN,
+  UMBRAL_MEDIDO_GRANDE_MXN,
   TURNOS_POR_DIA,
   DIAS_OPERACION_MES,
   FACTOR_TAMANO_BASE,
@@ -164,10 +166,13 @@ export function estimarPerdidaMensual(
     TECHO_MIN_MXN,
     TECHO_MAX_MXN
   )
-  // Grandes (base medida > umbral) usan un multiplicador menor para no toparse
-  // todos en el techo y verse iguales.
+  // Multiplicador escalonado por tamaño de la base medida (grande → chico → medio).
   const multiplicadorRedes =
-    googleMedido > UMBRAL_MEDIDO_GRANDE_MXN ? MULTIPLICADOR_REDES_GRANDE : MULTIPLICADOR_REDES
+    googleMedido > UMBRAL_MEDIDO_GRANDE_MXN
+      ? MULTIPLICADOR_REDES_GRANDE
+      : googleMedido < UMBRAL_MEDIDO_CHICO_MXN
+        ? MULTIPLICADOR_REDES_CHICO
+        : MULTIPLICADOR_REDES
   const conRedes = googleMedido * multiplicadorRedes
   // El techo manda sobre el multiplicador, pero el headline nunca baja de la
   // base MEDIDA (esa es "imposible de tumbar").
