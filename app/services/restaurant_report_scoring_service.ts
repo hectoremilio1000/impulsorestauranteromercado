@@ -3,6 +3,10 @@ import type { PlaceDetails } from '#services/google_places_service'
 export type LocalListingsIssue = {
   key: string
   label: string
+  // `problem`: qué se le muestra al dueño cuando el check FALLA — en idioma de
+  // consecuencia ("estás perdiendo clientes"), no el nombre positivo del check.
+  // Opcional: si falta, el front cae al `label`.
+  problem?: string
   why: string
   group: string
   weight: number
@@ -38,6 +42,8 @@ export function scoreLocalListings(details: PlaceDetails): {
     {
       key: 'rating_reviews',
       label: 'Buena calificación y volumen de reseñas (4.2+ y 30+ reseñas)',
+      problem:
+        'Tu calificación o número de reseñas se queda corto: es lo primero que mira la gente, y muchos clientes se van con el de junto que tiene mejores reseñas.',
       why: 'Un buen rating y volumen de reseñas es lo primero que ve un cliente antes de elegirte sobre la competencia.',
       group: 'Contenido del perfil',
       weight: 4,
@@ -47,6 +53,8 @@ export function scoreLocalListings(details: PlaceDetails): {
     {
       key: 'own_website',
       label: 'El perfil enlaza a tu propio sitio web (no sólo a un tercero)',
+      problem:
+        'No mandas a los clientes a un sitio tuyo: Google los suelta en un tercero y pierdes el control — y clientes que ya te estaban buscando.',
       why: 'Enlazar a tu propio sitio te da control total sobre la experiencia, en vez de depender de un tercero.',
       group: 'Contenido del perfil',
       weight: 4,
@@ -56,6 +64,8 @@ export function scoreLocalListings(details: PlaceDetails): {
     {
       key: 'opening_hours',
       label: 'Muestra horario de operación',
+      problem:
+        'No muestras tu horario: hay clientes que no llegan por no saber si estás abierto, o llegan cuando ya cerraste.',
       why: 'Mostrar tu horario evita que los clientes lleguen cuando estás cerrado, o que desistan por no saber si estás abierto.',
       group: 'Contenido del perfil',
       weight: 3,
@@ -65,6 +75,8 @@ export function scoreLocalListings(details: PlaceDetails): {
     {
       key: 'phone',
       label: 'Muestra número de teléfono',
+      problem:
+        'No muestras teléfono: al cliente que quiere contactarte directo se le complica y termina yéndose con otro.',
       why: 'Un teléfono visible facilita que te llamen directo para reservar o preguntar, sin pasar por un tercero.',
       group: 'Contenido del perfil',
       weight: 3,
@@ -74,6 +86,8 @@ export function scoreLocalListings(details: PlaceDetails): {
     {
       key: 'price_level',
       label: 'Tiene rango de precios configurado',
+      problem:
+        'No tienes rango de precios configurado: el cliente no sabe si le acomoda tu lugar y muchos ni se animan a entrar.',
       why: 'Mostrar tu rango de precios genera expectativas claras y filtra clientes antes de que lleguen.',
       group: 'Contenido del perfil',
       weight: 3,
@@ -83,6 +97,8 @@ export function scoreLocalListings(details: PlaceDetails): {
     {
       key: 'service_options',
       label: 'Tiene opciones de servicio (comer aquí, para llevar o a domicilio)',
+      problem:
+        'No muestras cómo pueden consumir contigo (en el lugar, para llevar…): el cliente duda y se va a un lugar que sí se lo dice claro.',
       why: 'Mostrar tus opciones de servicio ayuda a que el cliente sepa cómo puede consumir en tu negocio antes de llegar.',
       group: 'Contenido del perfil',
       weight: 3,
@@ -92,6 +108,8 @@ export function scoreLocalListings(details: PlaceDetails): {
     {
       key: 'quality_reviews',
       label: 'Reseñas de calidad (contenido, no sólo cantidad)',
+      problem:
+        'Tus reseñas casi no tienen comentarios escritos: generan menos confianza que las de la competencia, y la confianza es lo que hace que te elijan.',
       why: 'Reseñas con comentarios reales generan más confianza que solo un número de estrellas.',
       group: 'Contenido enviado por el usuario',
       weight: 0,
