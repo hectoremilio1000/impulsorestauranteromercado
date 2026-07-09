@@ -14,5 +14,6 @@ export const createRestaurantReportLeadValidator = vine.compile(
       .trim()
       .regex(/^[0-9]{10,15}$/),
     email: vine.string().trim().email().normalizeEmail(),
+    captchaToken: vine.string().trim().minLength(1),
   })
 )

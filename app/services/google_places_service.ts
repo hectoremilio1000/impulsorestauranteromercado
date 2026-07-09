@@ -29,12 +29,43 @@ export async function autocomplete(input: string): Promise<AutocompletePredictio
   }))
 }
 
+/**
+ * Resuelve la ubicación (lat/lng) de un negocio por su nombre, con sesgo hacia
+ * una coordenada (la zona del restaurante). Se usa para pintar en el mapa a los
+ * competidores de búsqueda (DataForSEO da nombre pero no coords).
+ */
+export async function findPlaceLocation(
+  name: string,
+  bias: { lat: number; lng: number } | null
+): Promise<{ lat: number; lng: number } | null> {
+  const { data } = await axios.get(`${BASE_URL}/findplacefromtext/json`, {
+    params: {
+      input: name,
+      inputtype: 'textquery',
+      fields: 'geometry',
+      language: 'es',
+      ...(bias ? { locationbias: `point:${bias.lat},${bias.lng}` } : {}),
+      key: env.get('GOOGLE_PLACES_API_KEY'),
+    },
+  })
+
+  if (data.status !== 'OK') return null
+  const loc = data.candidates?.[0]?.geometry?.location
+  return loc ? { lat: loc.lat, lng: loc.lng } : null
+}
+
 export type PlaceReview = {
   authorName: string
   profilePhotoUrl: string | null
   rating: number | null
   relativeTimeDescription: string | null
   text: string
+}
+
+export type AddressComponent = {
+  long_name: string
+  short_name: string
+  types: string[]
 }
 
 export type PlaceDetails = {
@@ -47,6 +78,7 @@ export type PlaceDetails = {
   price_level: number | null
   opening_hours: Record<string, unknown> | null
   types: string[]
+  address_components: AddressComponent[]
   dine_in: boolean | null
   takeout: boolean | null
   delivery: boolean | null
@@ -62,7 +94,7 @@ export async function getPlaceDetails(placeId: string): Promise<PlaceDetails> {
       place_id: placeId,
       language: 'es',
       fields:
-        'name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,price_level,types,dine_in,takeout,delivery,geometry,photos,reviews',
+        'name,formatted_address,address_components,formatted_phone_number,website,rating,user_ratings_total,opening_hours,price_level,types,dine_in,takeout,delivery,geometry,photos,reviews',
       key: env.get('GOOGLE_PLACES_API_KEY'),
     },
   })
@@ -83,6 +115,11 @@ export async function getPlaceDetails(placeId: string): Promise<PlaceDetails> {
     price_level: result.price_level ?? null,
     opening_hours: result.opening_hours ?? null,
     types: result.types ?? [],
+    address_components: (result.address_components ?? []).map((c: any) => ({
+      long_name: c.long_name ?? '',
+      short_name: c.short_name ?? '',
+      types: c.types ?? [],
+    })),
     dine_in: result.dine_in ?? null,
     takeout: result.takeout ?? null,
     delivery: result.delivery ?? null,
@@ -158,9 +195,30 @@ export async function getNearbyCompetitors(
 
   const results = (data.results ?? []) as any[]
 
-  return results
+  // Gate de calidad + ranking honesto:
+  //  - solo negocios OPERACIONALES,
+  //  - preferimos los que tienen volumen real de reseñas (sin vaciar la lista en
+  //    zonas de poca actividad: si el gate deja <4, se relaja),
+  //  - ordenamos por promedio bayesiano (rating ponderado por # de reseñas) para
+  //    que un ★5 con 2 reseñas NO le gane a un ★4.5 con miles.
+  const MIN_REVIEWS = 15
+  const PRIOR_MEAN = 4.0
+  const PRIOR_WEIGHT = 30
+  const bayes = (rating: number | null, reviews: number | null) => {
+    const r = rating ?? 0
+    const n = reviews ?? 0
+    return (r * n + PRIOR_MEAN * PRIOR_WEIGHT) / (n + PRIOR_WEIGHT)
+  }
+
+  const operational = results
     .filter((r) => r.place_id !== excludePlaceId)
-    .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+    .filter((r) => (r.business_status ? r.business_status === 'OPERATIONAL' : true))
+
+  const withEnoughReviews = operational.filter((r) => (r.user_ratings_total ?? 0) >= MIN_REVIEWS)
+  const pool = withEnoughReviews.length >= 4 ? withEnoughReviews : operational
+
+  return pool
+    .sort((a, b) => bayes(b.rating, b.user_ratings_total) - bayes(a.rating, a.user_ratings_total))
     .slice(0, limit)
     .map((r) => ({
       place_id: r.place_id,
