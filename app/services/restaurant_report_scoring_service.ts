@@ -43,7 +43,7 @@ export function scoreLocalListings(details: PlaceDetails): {
       key: 'rating_reviews',
       label: 'Buena calificación y volumen de reseñas (4.2+ y 30+ reseñas)',
       problem:
-        'Tu calificación o número de reseñas se queda corto: es lo primero que mira la gente, y muchos clientes se van con el de junto que tiene mejores reseñas.',
+        'No tienes buena calificación o volumen de reseñas (menos de 4.2★ o 30 reseñas): es lo primero que mira la gente, y muchos se van con el de junto que tiene mejores reseñas.',
       why: 'Un buen rating y volumen de reseñas es lo primero que ve un cliente antes de elegirte sobre la competencia.',
       group: 'Contenido del perfil',
       weight: 4,
