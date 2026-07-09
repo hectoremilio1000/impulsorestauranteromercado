@@ -54,6 +54,8 @@ export function scoreSeo(
     {
       key: 'custom_domain',
       label: 'Usa un dominio propio (no depende sólo de un tercero)',
+      problem:
+        'No tienes un sitio propio que Google pueda leer: dependes de terceros y pierdes el control de tu marca en internet.',
       why: 'Tener tu propio dominio te da control total sobre tu presencia en línea, en vez de depender de una plataforma de terceros.',
       group: 'Dominio',
       weight: 3,
@@ -63,6 +65,8 @@ export function scoreSeo(
     {
       key: 'single_domain',
       label: 'El sitio resuelve en un solo dominio, sin redirecciones extrañas',
+      problem:
+        'Tu sitio tiene redirecciones que confunden a Google sobre cuál es tu dirección real — puedes perder visitas en el camino.',
       why: 'Redirecciones innecesarias confunden a Google sobre cuál es tu dirección real y pueden perder visitas en el camino.',
       group: 'Dominio',
       weight: 2,
@@ -72,6 +76,8 @@ export function scoreSeo(
     {
       key: 'h1_exists',
       label: 'La página tiene un encabezado H1',
+      problem:
+        'Tu página no tiene un título principal claro: Google no entiende bien de qué es tu negocio y te cuesta aparecer en búsquedas.',
       why: 'El H1 es el título principal de tu página y ayuda a Google a entender de qué trata tu negocio.',
       group: 'Título (H1)',
       weight: 3,
@@ -81,6 +87,8 @@ export function scoreSeo(
     {
       key: 'h1_includes_zone',
       label: 'El H1 incluye tu zona de servicio (ciudad/colonia)',
+      problem:
+        'El título principal de tu página no menciona tu zona (colonia/ciudad): apareces menos cuando alguien busca cerca de ti.',
       why: 'Mencionar tu ciudad o colonia en el título principal ayuda a que aparezcas en búsquedas locales.',
       group: 'Título (H1)',
       weight: 2,
@@ -90,6 +98,8 @@ export function scoreSeo(
     {
       key: 'h1_includes_keywords',
       label: 'El H1 incluye keywords relevantes de tu negocio',
+      problem:
+        'El título principal no incluye lo que vendes: Google no te asocia con esas búsquedas y te encuentran menos.',
       why: 'Incluir palabras clave de tu negocio en el título principal mejora tu visibilidad en los buscadores.',
       group: 'Título (H1)',
       weight: 2,
@@ -99,6 +109,8 @@ export function scoreSeo(
     {
       key: 'images_alt',
       label: 'Las imágenes tienen texto alternativo (alt)',
+      problem:
+        'Tus fotos no tienen una descripción que Google pueda leer: no sabe qué muestran, no salen en Google Imágenes y pierdes visibilidad.',
       why: 'El texto alternativo ayuda a Google (y a personas con discapacidad visual) a entender qué muestra cada imagen.',
       group: 'Metadatos',
       weight: 3,
@@ -109,6 +121,8 @@ export function scoreSeo(
     {
       key: 'meta_description_length',
       label: 'La meta description tiene longitud suficiente (50+ caracteres)',
+      problem:
+        'El textito que aparece debajo de tu link en Google está vacío o muy corto: da mala impresión y menos gente hace clic.',
       why: 'Una meta description con suficiente longitud da más contexto en los resultados de búsqueda.',
       group: 'Metadatos',
       weight: 3,
@@ -118,6 +132,8 @@ export function scoreSeo(
     {
       key: 'meta_description_zone',
       label: 'La meta description incluye tu zona de servicio',
+      problem:
+        'Ese textito que sale en Google no menciona tu zona: apareces menos en las búsquedas de gente que está cerca de ti.',
       why: 'Mencionar tu zona en la meta description refuerza tu posicionamiento en búsquedas locales.',
       group: 'Metadatos',
       weight: 2,
@@ -127,6 +143,8 @@ export function scoreSeo(
     {
       key: 'meta_description_keywords',
       label: 'La meta description incluye keywords relevantes',
+      problem:
+        'Ese textito en Google no incluye lo que vendes: menos gente hace clic desde los resultados de búsqueda.',
       why: 'Incluir palabras clave relevantes en tu meta description puede mejorar el clic desde los resultados de búsqueda.',
       group: 'Metadatos',
       weight: 2,
@@ -136,6 +154,8 @@ export function scoreSeo(
     {
       key: 'og_title',
       label: 'Tiene Open Graph title (og:title)',
+      problem:
+        'Cuando comparten tu link en WhatsApp o Facebook, no aparece un título claro — se ve pobre y la gente no le da clic.',
       why: 'El og:title controla el título que se ve cuando comparten tu página en redes sociales.',
       group: 'Metadatos',
       weight: 3,
@@ -145,6 +165,8 @@ export function scoreSeo(
     {
       key: 'og_description',
       label: 'Tiene Open Graph description (og:description)',
+      problem:
+        'Al compartir tu link en redes o WhatsApp no sale una descripción — se ve incompleto y da menos confianza para abrirlo.',
       why: 'El og:description controla la descripción que aparece cuando comparten tu página en redes sociales.',
       group: 'Metadatos',
       weight: 2,
@@ -154,6 +176,8 @@ export function scoreSeo(
     {
       key: 'og_image',
       label: 'Tiene Open Graph image (og:image)',
+      problem:
+        'Cuando comparten tu link en WhatsApp o redes, sale SIN imagen de vista previa: se ve poco atractivo y casi nadie lo abre.',
       why: 'Sin og:image, tu link se comparte sin imagen de vista previa en redes sociales y WhatsApp.',
       group: 'Metadatos',
       weight: 3,
@@ -163,6 +187,8 @@ export function scoreSeo(
     {
       key: 'twitter_card',
       label: 'Tiene Twitter card',
+      problem:
+        'Al compartir tu sitio en X/Twitter no aparece una vista previa bonita — el link se ve simple y llama menos la atención.',
       why: 'Las Twitter cards dan una vista previa más rica cuando comparten tu sitio en Twitter/X.',
       group: 'Metadatos',
       weight: 2,
@@ -172,6 +198,8 @@ export function scoreSeo(
     {
       key: 'title_matches_business_name',
       label: 'El <title> coincide con el nombre de tu Perfil de Google Business',
+      problem:
+        'El nombre de tu página web no coincide con el de tu ficha de Google: da incoherencia de marca y confunde al cliente.',
       why: 'Que el título de tu página coincida con tu ficha de Google da coherencia a tu marca en todas partes.',
       group: 'Metadatos',
       weight: 3,
@@ -181,6 +209,8 @@ export function scoreSeo(
     {
       key: 'title_includes_zone',
       label: 'El <title> incluye tu zona de servicio',
+      problem:
+        'El nombre de tu página web no menciona tu zona: apareces menos en las búsquedas locales de tu área.',
       why: 'Incluir tu zona en el título de la página ayuda a mejorar tu visibilidad en búsquedas locales.',
       group: 'Metadatos',
       weight: 3,
@@ -190,6 +220,8 @@ export function scoreSeo(
     {
       key: 'title_includes_keywords',
       label: 'El <title> incluye keywords relevantes',
+      problem:
+        'El nombre de tu página web no incluye lo que vendes: Google te posiciona peor para esas búsquedas.',
       why: 'Una palabra clave relevante en el título de la página puede mejorar tu posicionamiento en buscadores.',
       group: 'Metadatos',
       weight: 2,
@@ -217,6 +249,8 @@ export function scoreGuestExperience(
     {
       key: 'no_offsite_ordering',
       label: 'No manda a ordenar sólo a una plataforma externa (Rappi/UberEats/DiDi Food)',
+      problem:
+        'Mandas a ordenar sólo a apps externas (Rappi/UberEats): pagas comisiones altas y pierdes el control de la experiencia y del cliente.',
       why: 'Depender solo de una plataforma externa para ordenar puede generar una experiencia inconexa y comisiones perdidas.',
       group: 'Contenido',
       weight: 3,
@@ -226,6 +260,8 @@ export function scoreGuestExperience(
     {
       key: 'order_cta_clear',
       label: 'Tiene un CTA claro para ordenar en línea',
+      problem:
+        'No hay un botón claro para ordenar o reservar: el cliente llega con ganas y no encuentra cómo — se va.',
       why: 'Un llamado a la acción claro para ordenar puede aumentar significativamente tus conversiones.',
       group: 'Contenido',
       weight: 3,
@@ -235,6 +271,8 @@ export function scoreGuestExperience(
     {
       key: 'sufficient_text',
       label: 'Tiene suficiente contenido de texto sobre el restaurante',
+      problem:
+        'Tu sitio tiene muy poco texto sobre tu negocio: Google no entiende bien qué ofreces y te encuentran menos.',
       why: 'Suficiente contenido de texto ayuda a Google a entender de qué trata tu negocio.',
       group: 'Contenido',
       weight: 3,
@@ -244,6 +282,8 @@ export function scoreGuestExperience(
     {
       key: 'phone',
       label: 'Muestra número de teléfono',
+      problem:
+        'No muestras un teléfono en tu sitio: le quitas al cliente una forma fácil y directa de contactarte.',
       why: 'Un teléfono visible en tu sitio aumenta las formas en que los clientes pueden contactarte para ordenar.',
       group: 'Contenido',
       weight: 3,
@@ -253,6 +293,8 @@ export function scoreGuestExperience(
     {
       key: 'favicon',
       label: 'Tiene favicon',
+      problem:
+        'Tu sitio no tiene su iconito en la pestaña del navegador: se ve menos profesional y confiable.',
       why: 'Un favicon da una apariencia más profesional cuando tu sitio está abierto en una pestaña del navegador.',
       group: 'Contenido',
       weight: 2,
@@ -262,6 +304,8 @@ export function scoreGuestExperience(
     {
       key: 'social_links',
       label: 'Tiene enlaces a redes sociales',
+      problem:
+        'Tu sitio no enlaza a tus redes sociales: el cliente no puede seguirte ni enterarse de tus promociones.',
       why: 'Los enlaces a redes sociales ayudan a los clientes a seguir tu marca y enterarse de promociones.',
       group: 'Contenido',
       weight: 2,
@@ -271,6 +315,8 @@ export function scoreGuestExperience(
     {
       key: 'opening_hours',
       label: 'Muestra horario de operación',
+      problem:
+        'Tu sitio no muestra tu horario: el visitante no sabe si estás abierto y muchos desisten de ir.',
       why: 'Mostrar tu horario en el sitio ayuda a los visitantes a planear su visita sin tener que preguntar.',
       group: 'Contenido',
       weight: 3,
@@ -280,6 +326,7 @@ export function scoreGuestExperience(
     {
       key: 'address',
       label: 'Muestra dirección',
+      problem: 'Tu sitio no muestra tu dirección: al cliente le cuesta ubicarte y llegar a tu negocio.',
       why: 'Incluir tu dirección ayuda a los clientes a localizarte y llegar a tu negocio.',
       group: 'Contenido',
       weight: 3,
@@ -289,6 +336,8 @@ export function scoreGuestExperience(
     {
       key: 'content_keywords',
       label: 'El contenido incluye keywords relevantes',
+      problem:
+        'Tu contenido no incluye lo que vendes: Google te posiciona peor y te encuentran menos personas.',
       why: 'Palabras clave relevantes en tu contenido mejoran tu visibilidad en los buscadores.',
       group: 'Contenido',
       weight: 2,
@@ -298,6 +347,8 @@ export function scoreGuestExperience(
     {
       key: 'about_section',
       label: 'Sección "Nosotros" o "Sobre el restaurante"',
+      problem:
+        'No tienes una sección de "Nosotros": pierdes la oportunidad de conectar y generar confianza con el cliente.',
       why: 'Una historia convincente ayuda a crear una conexión emocional con tus clientes.',
       group: 'Apariencia',
       weight: 2,
@@ -316,6 +367,8 @@ export function scoreGuestExperience(
     {
       key: 'good_reviews',
       label: 'Buen número de reseñas',
+      problem:
+        'Te faltan reseñas: sin suficientes opiniones, el cliente confía menos en ti y elige a otro.',
       why: 'Un buen número de reseñas genera confianza y credibilidad frente a clientes potenciales.',
       group: 'Apariencia',
       weight: 3,
@@ -325,6 +378,8 @@ export function scoreGuestExperience(
     {
       key: 'faq',
       label: 'Sección de Preguntas Frecuentes (FAQ)',
+      problem:
+        'No tienes sección de preguntas frecuentes: dejas dudas del cliente sin resolver, y algunos no cierran por eso.',
       why: 'Una sección de FAQ da más información al cliente (y a Google) sin que tenga que preguntarte directo.',
       group: 'Apariencia',
       weight: 3,
@@ -334,6 +389,8 @@ export function scoreGuestExperience(
     {
       key: 'order_benefits_copy',
       label: 'Explica los beneficios de ordenar directo',
+      problem:
+        'No explicas por qué conviene ordenar directo contigo (vs. una app): pierdes pedidos que se van a plataformas con comisión.',
       why: 'Es más probable que un cliente ordene directo si entiende las ventajas de hacerlo (vs. una app de terceros).',
       group: 'Apariencia',
       weight: 2,
@@ -343,6 +400,8 @@ export function scoreGuestExperience(
     {
       key: 'page_speed',
       label: 'Sitio rápido (velocidad de carga móvil)',
+      problem:
+        'Tu sitio carga lento en el celular: muchos se van antes de ver tu menú (la mayoría entra desde el teléfono).',
       why: 'Un sitio lento hace que los visitantes se vayan antes de ver tu menú, sobre todo desde el celular.',
       group: 'Usabilidad',
       weight: 3,
@@ -352,6 +411,8 @@ export function scoreGuestExperience(
     {
       key: 'mobile_optimized',
       label: 'Optimizado para móvil',
+      problem:
+        'Tu sitio no está optimizado para celular: se ve mal justo donde te visita la mayoría de tus clientes.',
       why: 'La mayoría de tus clientes te van a visitar desde el celular, así que tu sitio debe verse bien ahí.',
       group: 'Usabilidad',
       weight: 3,
