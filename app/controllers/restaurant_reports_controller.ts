@@ -376,10 +376,13 @@ export default class RestaurantReportsController {
         return response.notFound({ status: 'error', message: 'Reporte no encontrado.' })
       }
 
-      // La liga del reporte caduca tras REPORT_FRESHNESS_HOURS. Si expiró, NO
-      // devolvemos los datos (ni por la liga del correo) — solo el flag `expired`,
-      // para que el usuario tenga que volver a generar el reporte.
-      const ageHours = DateTime.now().diff(report.createdAt, 'hours').hours
+      // La liga del reporte caduca tras REPORT_FRESHNESS_HOURS. Se mide desde
+      // `updatedAt` (última vez que se generó la data), NO `createdAt`: si el
+      // reporte se regenera al volver a buscar el mismo lugar, `store` refresca
+      // `updatedAt` pero conserva `createdAt` — usar createdAt haría que un
+      // reporte recién regenerado saliera como "caducado". Consistente con el
+      // check de frescura de `store`.
+      const ageHours = DateTime.now().diff(report.updatedAt, 'hours').hours
       if (ageHours > REPORT_FRESHNESS_HOURS) {
         return response.ok({
           status: 'success',
