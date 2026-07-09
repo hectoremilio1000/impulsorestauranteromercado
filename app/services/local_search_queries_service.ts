@@ -1,3 +1,6 @@
+import { ZONE_WEIGHTS, type ZoneLevel } from '#config/loss_estimation'
+import type { AddressComponent } from '#services/google_places_service'
+
 const CATEGORY_PHRASES: Record<string, string[]> = {
   restaurant: ['restaurante'],
   bar: ['bar'],
@@ -54,6 +57,24 @@ const NAME_KEYWORD_PHRASES: Array<{ pattern: RegExp; phrase: string }> = [
   { pattern: /hamburgues/, phrase: 'hamburguesas' },
   { pattern: /pollo/, phrase: 'pollo' },
   { pattern: /trattoria|italian/, phrase: 'comida italiana' },
+  { pattern: /fonda|cocina econom|comida corrida|comedor/, phrase: 'comida corrida' },
+  { pattern: /mezcaler|mezcal/, phrase: 'mezcalería' },
+  { pattern: /pulquer|pulque/, phrase: 'pulquería' },
+  { pattern: /cervecer|cheler/, phrase: 'cervecería' },
+  { pattern: /pozol/, phrase: 'pozole' },
+  { pattern: /carnitas/, phrase: 'carnitas' },
+  { pattern: /barbacoa/, phrase: 'barbacoa' },
+  { pattern: /antojit|garnach/, phrase: 'antojitos' },
+  { pattern: /ramen|izakaya|japon/, phrase: 'comida japonesa' },
+  { pattern: /alit|wings?\b/, phrase: 'alitas' },
+  { pattern: /crepa|creper/, phrase: 'crepas' },
+  { pattern: /vegan/, phrase: 'comida vegana' },
+  { pattern: /vegetarian/, phrase: 'comida vegetariana' },
+  { pattern: /mole|oaxaqu/, phrase: 'comida oaxaqueña' },
+  { pattern: /parrillada|carbon/, phrase: 'carnes asadas' },
+  { pattern: /pastas?\b/, phrase: 'pasta' },
+  { pattern: /ensalad/, phrase: 'ensaladas' },
+  { pattern: /postres?|reposter|helad/, phrase: 'postres' },
 ]
 
 function normalize(value: string): string {
@@ -216,4 +237,173 @@ export function buildVolumeQueries(details: {
   )
 
   return Array.from(new Set(queries)).slice(0, 6)
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// FRENTE A — Keywords = SOLO lo que el negocio vende, × 3 niveles de zona
+// con captura ponderada. Ver ESTADO_SESION_IMPULSO.md §1.
+// ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * Semillas de demanda por concepto: SOLO lo que ese negocio realmente vende.
+ * Un bar NO se mide con "restaurante"/"comida" (no es lo que la gente busca
+ * cuando quiere ir a ESE bar), sino con "cerveza", "cantina", "mezcal"…
+ *
+ * Clave = la frase que devuelve `inferCuisinePhrase` (subtipo de cocina de
+ * Places, o palabra clave del nombre, o categoría genérica). Si un concepto
+ * no está en el mapa, se usa la propia frase como única semilla.
+ *
+ * Tunable: más/mejores semillas = base más completa. Cada semilla × zona
+ * cuesta llamadas a DataForSEO, por eso se acotan (ver MAX_SEEDS/queries).
+ */
+const CONCEPT_SEEDS: Record<string, string[]> = {
+  // Bebida / vida nocturna — la comida NO es el primario. "bar" va primero:
+  // es el término genérico de mayor volumen; los específicos (cantina, mezcal…)
+  // capturan la demanda de nicho.
+  bar: ['bar', 'cerveza', 'cantina', 'mezcal', 'tragos', 'botana', 'terraza', 'antro'],
+  cantina: ['cantina', 'bar', 'cerveza', 'mezcal', 'tragos', 'botana', 'terraza'],
+  cervecería: ['cervecería', 'bar', 'cerveza', 'cheve', 'botana', 'terraza'],
+  mezcalería: ['mezcalería', 'bar', 'mezcal', 'cocteles', 'tragos'],
+  pulquería: ['pulquería', 'pulque', 'bar', 'curados'],
+  antro: ['antro', 'bar', 'tragos', 'vida nocturna'],
+  // Comida
+  tacos: ['tacos', 'taquería', 'tacos al pastor', 'suadero'],
+  birria: ['birria', 'tacos de birria', 'consomé'],
+  pizza: ['pizza', 'pizzería'],
+  sushi: ['sushi', 'rollos', 'comida japonesa'],
+  'comida japonesa': ['comida japonesa', 'sushi', 'ramen'],
+  mariscos: ['mariscos', 'ceviche', 'aguachile'],
+  'carnes asadas': ['carnes asadas', 'cortes', 'parrilla'],
+  café: ['café', 'cafetería', 'desayunos', 'brunch'],
+  panadería: ['panadería', 'pan', 'pan dulce'],
+  hamburguesas: ['hamburguesas', 'burgers'],
+  pollo: ['pollo rostizado', 'pollo asado'],
+  'comida italiana': ['comida italiana', 'pasta', 'pizza'],
+  'comida corrida': ['comida corrida', 'menú del día', 'fonda', 'comida casera'],
+  pozole: ['pozole', 'antojitos'],
+  carnitas: ['carnitas', 'tacos de carnitas'],
+  barbacoa: ['barbacoa', 'consomé'],
+  antojitos: ['antojitos', 'quesadillas', 'garnachas'],
+  alitas: ['alitas', 'boneless', 'wings'],
+  crepas: ['crepas', 'postres'],
+  'comida vegana': ['comida vegana', 'vegano'],
+  'comida vegetariana': ['comida vegetariana', 'vegetariano'],
+  'comida oaxaqueña': ['comida oaxaqueña', 'mole', 'tlayudas'],
+  pasta: ['pasta', 'comida italiana'],
+  ensaladas: ['ensaladas', 'comida saludable'],
+  postres: ['postres', 'repostería'],
+  'comida mexicana': ['comida mexicana', 'antojitos'],
+  // Fallback genérico (restaurante sin señal de cocina): aquí SÍ aplica
+  // "restaurante/comida" porque es literalmente lo que vende.
+  restaurante: ['restaurante', 'comida', 'donde comer'],
+}
+
+// Las 16 alcaldías de la CDMX. Google NO las expone en address_components
+// (salta el nivel), así que se detectan matcheando el formatted_address.
+const ALCALDIAS_CDMX = [
+  'Álvaro Obregón',
+  'Azcapotzalco',
+  'Benito Juárez',
+  'Coyoacán',
+  'Cuajimalpa',
+  'Cuauhtémoc',
+  'Gustavo A. Madero',
+  'Iztacalco',
+  'Iztapalapa',
+  'La Magdalena Contreras',
+  'Miguel Hidalgo',
+  'Milpa Alta',
+  'Tláhuac',
+  'Tlalpan',
+  'Venustiano Carranza',
+  'Xochimilco',
+]
+
+const MAX_SEEDS = 5
+
+/** Canónico para dedup: quita plural (es|s) de cada palabra → "bares" y "bar"
+ * cuentan como UNA sola demanda. Solo se usa como llave de dedup, no cambia
+ * la query real que se manda a la API. */
+function canonicalize(query: string): string {
+  return normalize(query)
+    .split(/\s+/)
+    .map((word) => word.replace(/(es|s)$/, ''))
+    .join(' ')
+    .trim()
+}
+
+/** Semillas de concepto (solo lo que vende el negocio), acotadas a MAX_SEEDS. */
+export function buildConceptSeeds(details: { name: string; types: string[] }): string[] {
+  const categoryPhrases = details.types.flatMap((type) => CATEGORY_PHRASES[type] ?? [])
+  const concept =
+    inferCuisinePhrase(details.name, details.types) ?? categoryPhrases[0] ?? 'restaurante'
+  const seeds = CONCEPT_SEEDS[concept] ?? [concept]
+  return seeds.slice(0, MAX_SEEDS)
+}
+
+/** Deriva los 3 niveles de zona: colonia (address_components), alcaldía (lista
+ * CDMX sobre formatted_address) y ciudad. Fuera de CDMX no hay alcaldía. */
+export function deriveZones(
+  formattedAddress: string | null,
+  addressComponents: AddressComponent[]
+): { colonia: string | null; alcaldia: string | null; ciudad: string | null } {
+  const coloniaComp = addressComponents.find(
+    (c) => c.types.includes('sublocality_level_1') || c.types.includes('sublocality')
+  )
+  const colonia = coloniaComp?.long_name ?? deriveVolumeZone(formattedAddress)
+
+  // OJO: matchear la alcaldía sobre el formatted_address crudo agarra nombres
+  // de CALLE que coinciden con una alcaldía (ej. una dirección en "Av. Álvaro
+  // Obregón" de la Roma NO está en la alcaldía Álvaro Obregón). Quitamos la
+  // calle (route) antes de matchear. Confirmado con un caso real: Cantina La
+  // Llorona (Hipódromo, Cuauhtémoc) se detectaba mal como "Álvaro Obregón".
+  const route = addressComponents.find((c) => c.types.includes('route'))?.long_name ?? ''
+  const normAddr = normalize(formattedAddress ?? '').replace(normalize(route), '')
+  const alcaldia = ALCALDIAS_CDMX.find((a) => normAddr.includes(normalize(a))) ?? null
+
+  // Si hay alcaldía, es CDMX → la gente busca "cerveza cdmx". Fuera de CDMX,
+  // el nivel amplio es la ciudad/municipio del address.
+  const { city } = parseAddressParts(formattedAddress)
+  const ciudad = alcaldia ? 'CDMX' : city
+
+  return { colonia: colonia ?? null, alcaldia, ciudad: ciudad ?? null }
+}
+
+export type WeightedQuery = { query: string; zone: ZoneLevel; weight: number }
+
+/**
+ * FRENTE A: arma las queries de volumen combinando cada semilla de concepto
+ * con cada nivel de zona, cada una con su peso de captura (colonia 1.0,
+ * alcaldía 0.40, ciudad 0.04). Dedup canónico por plural. La pérdida de cada
+ * query se pondera luego por este peso en loss_estimation_service.
+ */
+export function buildWeightedVolumeQueries(details: {
+  name: string
+  types: string[]
+  formatted_address: string | null
+  address_components: AddressComponent[]
+}): WeightedQuery[] {
+  const seeds = buildConceptSeeds(details)
+  const zones = deriveZones(details.formatted_address, details.address_components)
+
+  const zoneEntries: Array<{ level: ZoneLevel; value: string }> = []
+  const coloniaClean = zones.colonia?.replace(/^col(?:onia)?\.?\s+/i, '').trim()
+  if (coloniaClean) zoneEntries.push({ level: 'colonia', value: coloniaClean })
+  if (zones.alcaldia) zoneEntries.push({ level: 'alcaldia', value: zones.alcaldia })
+  if (zones.ciudad) zoneEntries.push({ level: 'ciudad', value: zones.ciudad })
+
+  const out: WeightedQuery[] = []
+  const seen = new Set<string>()
+
+  for (const seed of seeds) {
+    for (const z of zoneEntries) {
+      const query = normalize(`${seed} ${z.value}`).trim()
+      const canon = canonicalize(query)
+      if (!query || seen.has(canon)) continue
+      seen.add(canon)
+      out.push({ query, zone: z.level, weight: ZONE_WEIGHTS[z.level] })
+    }
+  }
+
+  return out
 }

@@ -88,6 +88,9 @@ export default await Env.create(new URL(`file://${appRootPath}/`), {
   DATAFORSEO_LOGIN: Env.schema.string(),
   DATAFORSEO_PASSWORD: Env.schema.string(),
 
+  // --- reCAPTCHA v2 (gate del Reporte AI)
+  RECAPTCHA_SECRET_KEY: Env.schema.string(),
+
   // --- Calendly
   CALENDLY_CLIENT_ID: Env.schema.string(),
   CALENDLY_CLIENT_SECRET: Env.schema.string(),
