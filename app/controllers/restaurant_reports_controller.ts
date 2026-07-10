@@ -25,6 +25,7 @@ import { estimarPerdidaMensual } from '#services/loss_estimation_service'
 import { verifyRecaptcha } from '#services/recaptcha_service'
 import { resolveSearchCompetitors } from '#services/search_competitors_service'
 import { postWorstReviewsTask, getWorstReviews } from '#services/google_reviews_service'
+import { reportConversionToTracking } from '#services/tracking_api_service'
 
 const REPORT_FRESHNESS_HOURS = 24
 
@@ -440,6 +441,30 @@ export default class RestaurantReportsController {
         name: data.name,
         whatsapp: data.whatsapp,
         email: data.email,
+      })
+
+      const leadUid = request.input('lead_uid') as string | undefined
+      const issues = Array.isArray(report.issues)
+        ? report.issues
+            .slice(0, 5)
+            .map((issue) =>
+              typeof issue === 'string' ? issue : (issue as any)?.label ?? JSON.stringify(issue)
+            )
+        : []
+      reportConversionToTracking({
+        leadUid,
+        eventName: 'ai_report_lead',
+        name: data.name,
+        email: data.email,
+        phone: data.whatsapp,
+        externalId: String(report.id),
+        meta: {
+          report_id: report.id,
+          score_total: report.score_total,
+          score_label: report.score_label,
+          estimated_monthly_loss: report.estimated_monthly_loss,
+          issues,
+        },
       })
 
       const reportUrl = `${env.get('FRONTEND_URL')}/reporte-ai/resultado?id=${report.id}`
