@@ -8,6 +8,7 @@ import { buildRecommendationEmailHtml } from '#services/recommendation_email'
 import RecommendationGenerator from '#services/recommendation_generator'
 import { buildRespuestasTextoFromDb } from '#services/survey_responses_text'
 import { surveyIntakeValidator } from '#validators/survey_intake'
+import { reportConversionToTracking } from '#services/tracking_api_service'
 
 import Prospect from '#models/prospect'
 import Response from '#models/response'
@@ -140,9 +141,20 @@ export default class ProspectsController {
         'status',
         'origin',
       ])
+      const leadUid = request.input('lead_uid') as string | undefined
       console.log('Datos recibidos:', data)
 
       const prospect = await Prospect.create(data)
+
+      reportConversionToTracking({
+        leadUid,
+        eventName: 'lead_form',
+        name: `${data.first_name} ${data.last_name}`.trim(),
+        email: data.email,
+        phone: data.whatsapp,
+        externalId: String(prospect.id),
+        meta: { origin: data.origin },
+      })
 
       await sendEmail({
         to: data.email,
@@ -281,10 +293,21 @@ export default class ProspectsController {
         'status',
         'origin',
       ])
+      const leadUid = request.input('lead_uid') as string | undefined
       console.log('Datos recibidos:', data) // Verifica que `status` esté presente aquí
 
       // Crear el prospecto en la base de datos
       const prospect = await Prospect.create(data)
+
+      reportConversionToTracking({
+        leadUid,
+        eventName: 'lead_form',
+        name: `${data.first_name} ${data.last_name}`.trim(),
+        email: data.email,
+        phone: data.whatsapp,
+        externalId: String(prospect.id),
+        meta: { origin: data.origin },
+      })
 
       // Ruta del PDF que será enviado como adjunto
       const pdfPath = app.makePath(
