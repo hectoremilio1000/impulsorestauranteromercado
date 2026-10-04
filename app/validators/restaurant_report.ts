@@ -15,5 +15,8 @@ export const createRestaurantReportLeadValidator = vine.compile(
       .regex(/^[0-9]{10,15}$/),
     email: vine.string().trim().email().normalizeEmail(),
     captchaToken: vine.string().trim().minLength(1),
+    /* Opcional a propósito: el front de Impulso no lo manda y debe seguir
+     * funcionando igual. La normalización y el fail-safe viven en resolveBrand(). */
+    brand: vine.string().trim().optional(),
   })
 )

@@ -1,21 +1,24 @@
 import RestaurantReport from '#models/restaurant_report'
-
-const LOGO_URL =
-  'https://www.impulsorestaurantero.com/_next/static/media/logoPalabrasFinalImpulsoRestaurantero.4cf72051.png'
-const GOLD = '#a78b21'
-const BLACK = '#0a0a0a'
+import { brandProfile, DEFAULT_BRAND, type ReportBrand } from '#services/report_brands'
 
 type BuildLeadConfirmationEmailInput = {
   data: { name: string; whatsapp: string; email: string }
   report: RestaurantReport
   reportUrl: string
+  /** Quién capturó el lead. Omitirlo deja el correo EXACTAMENTE como era: Impulso. */
+  brand?: ReportBrand
 }
 
 export function buildLeadConfirmationEmailHtml({
   data,
   report,
   reportUrl,
+  brand = DEFAULT_BRAND,
 }: BuildLeadConfirmationEmailInput): string {
+  /* Los nombres GOLD/BLACK se conservan para que el diff sea sólo de origen del valor,
+   * no una reescritura de la plantilla: así se ve de un vistazo que el HTML no cambió. */
+  const profile = brandProfile(brand)
+  const { logoUrl: LOGO_URL, accent: GOLD, dark: BLACK } = profile
   const pointsReviewed = report.has_website ? 32 : 20
 
   return `
@@ -27,7 +30,7 @@ export function buildLeadConfirmationEmailHtml({
               <table role="presentation" width="100%" style="max-width:560px;" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center" style="background-color:${BLACK};padding:28px 24px;border-radius:16px 16px 0 0;">
-                    <img src="${LOGO_URL}" alt="Impulso Restaurantero" width="220" style="display:block;max-width:220px;height:auto;" />
+                    <img src="${LOGO_URL}" alt="${profile.name}" width="220" style="display:block;max-width:220px;height:auto;" />
                   </td>
                 </tr>
                 <tr>
@@ -54,13 +57,13 @@ export function buildLeadConfirmationEmailHtml({
                     </p>
                     <p style="margin:0;color:#333;font-size:15px;line-height:22px;">
                       ¡Éxito!<br />
-                      El equipo de <span style="color:${GOLD};font-weight:bold;">Impulso Restaurantero</span>
+                      El equipo de <span style="color:${GOLD};font-weight:bold;">${profile.name}</span>
                     </p>
                   </td>
                 </tr>
                 <tr>
                   <td align="center" style="padding:16px 0;color:#999;font-size:12px;">
-                    Impulso Restaurantero · impulsorestaurantero.com
+                    ${profile.footer}
                   </td>
                 </tr>
               </table>
