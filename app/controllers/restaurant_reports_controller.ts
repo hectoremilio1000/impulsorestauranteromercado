@@ -1,9 +1,10 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
 import mail from '@adonisjs/mail/services/main'
-import env from '#start/env'
 import RestaurantReport from '#models/restaurant_report'
 import RestaurantReportLead from '#models/restaurant_report_lead'
+import { brandProfile, DEFAULT_BRAND, resolveBrand } from '#services/report_brands'
+import { sendEmail } from '#services/resend_mailer'
 import {
   createRestaurantReportValidator,
   createRestaurantReportLeadValidator,
@@ -436,11 +437,18 @@ export default class RestaurantReportsController {
         })
       }
 
+      /* Qué sitio capturó el lead. Sin el campo (todo lo que existe hoy) cae en
+       * 'impulso' y nada cambia. Un valor raro tampoco rompe: resolveBrand lo
+       * normaliza al default en vez de lanzar. */
+      const brand = resolveBrand(data.brand)
+      const profile = brandProfile(brand)
+
       const lead = await RestaurantReportLead.create({
         restaurant_report_id: report.id,
         name: data.name,
         whatsapp: data.whatsapp,
         email: data.email,
+        brand,
       })
 
       const leadUid = request.input('lead_uid') as string | undefined
@@ -467,19 +475,34 @@ export default class RestaurantReportsController {
         },
       })
 
-      const reportUrl = `${env.get('FRONTEND_URL')}/reporte-ai/resultado?id=${report.id}`
+      const reportUrl = `${profile.frontendUrl()}/reporte-ai/resultado?id=${report.id}`
+      const subject = `${profile.name}: tu reporte de ${report.name} está listo`
+      const html = buildLeadConfirmationEmailHtml({ data, report, reportUrl, brand })
 
-      await mail
-        .send((message) => {
-          message
-            .to(data.email)
-            .from(env.get('SMTP_FROM'))
-            .subject(`Impulso Restaurantero: tu reporte de ${report.name} está listo`)
-            .html(buildLeadConfirmationEmailHtml({ data, report, reportUrl }))
-        })
-        .catch((error) => {
-          console.error('Error enviando correo de confirmación del lead:', error)
-        })
+      /* ── Dos transportes, a propósito ────────────────────────────────────────
+       * Impulso sigue saliendo por SMTP exactamente como antes: es lo que está
+       * probado en producción y este cambio no tiene por qué tocarlo.
+       *
+       * Las demás marcas salen por la API de Resend con SU PROPIA clave, que es
+       * como `prospects_controller` ya manda los correos de Growthsuite desde este
+       * mismo backend. Cada dominio verificado tiene su clave; mandar
+       * growthsuite.com.mx por la cuenta de Impulso rebotaría. */
+      const envio =
+        brand === DEFAULT_BRAND
+          ? mail.send((message) => {
+              message.to(data.email).from(profile.from).subject(subject).html(html)
+            })
+          : sendEmail({
+              to: data.email,
+              subject,
+              html,
+              from: profile.from,
+              apiKey: profile.apiKey(),
+            })
+
+      await envio.catch((error) => {
+        console.error(`Error enviando correo de confirmación del lead (${brand}):`, error)
+      })
 
       return response.created({ status: 'success', data: lead })
     } catch (error) {
