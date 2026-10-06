@@ -45,6 +45,12 @@ export default await Env.create(new URL(`file://${appRootPath}/`), {
   HOST: Env.schema.string({ format: 'host' }),
   LOG_LEVEL: Env.schema.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']),
   FRONTEND_URL: Env.schema.string(),
+  /**
+   * Frontend de la marca Growthsuite. Opcional a propósito: si falta, los correos de
+   * esa marca caen al FRONTEND_URL de Impulso (ver app/services/report_brands.ts).
+   * Sin esta línea el esquema la descarta y env.get() siempre devuelve undefined.
+   */
+  GROWTHSUITE_FRONTEND_URL: Env.schema.string.optional(),
 
   // --- DB
   DB_HOST: Env.schema.string({ format: 'host' }),
