@@ -19,6 +19,10 @@ export default class RestaurantReportLead extends BaseModel {
   @column()
   declare email: string
 
+  /** Sitio que capturó el lead: 'impulso' | 'growthsuite'. Ver app/services/report_brands.ts */
+  @column()
+  declare brand: string
+
   @belongsTo(() => RestaurantReport, {
     foreignKey: 'restaurant_report_id',
   })
