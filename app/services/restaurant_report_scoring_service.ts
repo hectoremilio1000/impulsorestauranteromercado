@@ -12,6 +12,12 @@ export type LocalListingsIssue = {
   weight: number
   checkable: boolean
   pass: boolean | null
+  /** false cuando el dato no se pudo medir (pass = null y no suma puntos). */
+  measured?: boolean
+  /** Por qué no se midió (sin secretos: sólo código y mensaje del proveedor). */
+  measurement_error?: string
+  /** Valor medido, si aplica (p. ej. score móvil de PageSpeed 0-100). */
+  measured_value?: number
 }
 
 const THIRD_PARTY_ORDERING_HOSTS = ['rappi.com', 'ubereats.com', 'didi', 'pedidosya.com']
