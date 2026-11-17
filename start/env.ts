@@ -89,6 +89,9 @@ export default await Env.create(new URL(`file://${appRootPath}/`), {
 
   // --- Google Places (Reporte AI de restaurantes)
   GOOGLE_PLACES_API_KEY: Env.schema.string(),
+  // Sólo DEV/local: permite `website_url` en POST /api/restaurant-reports para
+  // analizar otra URL. Ignorado en production aunque esté en true.
+  REPORT_ALLOW_WEBSITE_OVERRIDE: Env.schema.boolean.optional(),
 
   // --- DataForSEO (Fase 3: rankings SERP locales del Reporte AI)
   DATAFORSEO_LOGIN: Env.schema.string(),

@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
 import mail from '@adonisjs/mail/services/main'
+import env from '#start/env'
 import RestaurantReport from '#models/restaurant_report'
 import RestaurantReportLead from '#models/restaurant_report_lead'
 import { brandProfile, DEFAULT_BRAND, resolveBrand } from '#services/report_brands'
@@ -29,6 +30,19 @@ import { postWorstReviewsTask, getWorstReviews } from '#services/google_reviews_
 import { reportConversionToTracking } from '#services/tracking_api_service'
 
 const REPORT_FRESHNESS_HOURS = 24
+
+// Sólo código HTTP y mensaje del proveedor: el error de axios trae la URL con la
+// llave en `config`, y eso no debe terminar en la base ni en los logs.
+function describePageSpeedError(reason: unknown): string {
+  const err = reason as {
+    response?: { status?: number; data?: { error?: { message?: string } } }
+    code?: string
+  }
+  const status = err?.response?.status
+  const message = err?.response?.data?.error?.message
+  if (status) return `PageSpeed HTTP ${status}${message ? `: ${message.slice(0, 200)}` : ''}`
+  return `PageSpeed sin respuesta${err?.code ? ` (${err.code})` : ''}`
+}
 
 export default class RestaurantReportsController {
   public async autocomplete({ request, response }: HttpContext) {
@@ -106,10 +120,20 @@ export default class RestaurantReportsController {
 
   public async store({ request, response }: HttpContext) {
     try {
-      const { place_id: placeId } = await request.validateUsing(createRestaurantReportValidator)
+      const { place_id: placeId, website_url: websiteUrlInput } = await request.validateUsing(
+        createRestaurantReportValidator
+      )
+      const websiteOverride =
+        websiteUrlInput &&
+        env.get('REPORT_ALLOW_WEBSITE_OVERRIDE') === true &&
+        env.get('NODE_ENV') !== 'production'
+          ? websiteUrlInput
+          : null
 
       const existing = await RestaurantReport.query().where('place_id', placeId).first()
+      // Con URL forzada nunca se reutiliza el reporte guardado: se analiza de nuevo.
       const isFresh =
+        !websiteOverride &&
         existing &&
         existing.updatedAt &&
         DateTime.now().diff(existing.updatedAt, 'hours').hours < REPORT_FRESHNESS_HOURS
@@ -133,6 +157,7 @@ export default class RestaurantReportsController {
       let websiteScrapeError: string | null = null
       let scrape = null as Awaited<ReturnType<typeof scrapeWebsite>> | null
       let mobilePerformanceScore: number | null = null
+      let pageSpeedError: string | null = null
       let serpQueries: LocalRankingResult[] = []
       let serpRankingError: string | null = null
       let photoUrl: string | null = null
@@ -170,8 +195,9 @@ export default class RestaurantReportsController {
         )
       }
 
-      if (details.website) {
-        const website = details.website
+      const websiteToAnalyze = websiteOverride ?? details.website
+      if (websiteToAnalyze) {
+        const website = websiteToAnalyze
         parallelTasks.push(
           (async () => {
             const [scrapeResult, pageSpeedResult] = await Promise.allSettled([
@@ -189,8 +215,12 @@ export default class RestaurantReportsController {
 
             if (pageSpeedResult.status === 'fulfilled') {
               mobilePerformanceScore = pageSpeedResult.value.mobilePerformanceScore
+              if (mobilePerformanceScore === null) {
+                pageSpeedError = 'PageSpeed respondió sin calificación de rendimiento.'
+              }
             } else {
-              console.error('Error obteniendo PageSpeed:', pageSpeedResult.reason)
+              pageSpeedError = describePageSpeedError(pageSpeedResult.reason)
+              console.error('Error obteniendo PageSpeed:', pageSpeedError)
             }
           })()
         )
@@ -305,7 +335,8 @@ export default class RestaurantReportsController {
       const { score: scoreGuestResult, issues: guestIssues } = scoreGuestExperience(
         details,
         scrape,
-        mobilePerformanceScore
+        mobilePerformanceScore,
+        pageSpeedError
       )
 
       const scoreTotal = scoreLocal + scoreSeoResult + scoreGuestResult
@@ -315,7 +346,8 @@ export default class RestaurantReportsController {
         name: details.name,
         formatted_address: details.formatted_address,
         phone: details.formatted_phone_number,
-        website: details.website,
+        // Con URL forzada (sólo DEV) se guarda la URL final realmente analizada.
+        website: websiteOverride ? (scrape?.finalUrl ?? websiteOverride) : details.website,
         has_website: Boolean(details.website),
         rating: details.rating,
         user_ratings_total: details.user_ratings_total,
