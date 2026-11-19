@@ -16,13 +16,94 @@ function normalize(value: string): string {
   return value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
 }
 
-function deriveZoneTerms(formattedAddress: string | null): string[] {
+const POSTAL_CODE_RE = /\b\d{4,5}\b/g
+
+// Zona = colonia, alcaldía/municipio, ciudad y estado de la dirección de Google.
+// - El primer segmento es la calle y el número: es dirección, no zona.
+// - El último segmento suele ser el país.
+// - El código postal va pegado a la ciudad ("06100 Ciudad de México"); se quita
+//   para que "Ciudad de México" pueda coincidir.
+export function deriveZoneTerms(formattedAddress: string | null): string[] {
   if (!formattedAddress) return []
-  return formattedAddress
-    .split(',')
-    .map((part) => part.trim())
-    .filter((part) => part.length >= 3 && !/^\d+$/.test(part) && !/^[A-Z]{2}$/.test(part))
-    .slice(0, -1) // el último segmento suele ser el país, lo descartamos
+  const segments = formattedAddress.split(',').map((part) => part.trim())
+  const withoutStreet = /\d/.test(segments[0] ?? '') ? segments.slice(1) : segments
+  return withoutStreet
+    .slice(0, -1)
+    .map((part) => part.replace(POSTAL_CODE_RE, '').replace(/\s+/g, ' ').trim())
+    .filter((part) => part.length >= 3 && !/^[A-Z]{2}$/.test(part))
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+// Coincidencia por palabra completa y sin acentos: "Roma" no coincide con
+// "Romano", y "Hipódromo" coincide con "Hipodromo".
+function containsWholeWord(haystack: string | null, needles: string[]): boolean {
+  if (!haystack || needles.length === 0) return false
+  const normalizedHaystack = normalize(haystack)
+  return needles.some((needle) => {
+    const n = normalize(needle).trim()
+    if (!n) return false
+    return new RegExp(`(^|[^a-z0-9])${escapeRegExp(n)}($|[^a-z0-9])`).test(normalizedHaystack)
+  })
+}
+
+const NAME_STOPWORDS = new Set([
+  'la', 'el', 'los', 'las', 'de', 'del', 'y', 'e', 'the', 'and', 'of', '&', '-', '|',
+])
+
+function nameTokens(name: string): string[] {
+  return normalize(name)
+    .split(/[^a-z0-9]+/)
+    .filter((token) => token.length > 0 && !NAME_STOPWORDS.has(token))
+}
+
+// El <title> "coincide" con el nombre de la ficha si contiene TODAS sus palabras
+// significativas, en cualquier orden: "La Llorona Cantina" = "Cantina La Llorona".
+// Si falta una palabra ("La Llorona Bar"), no coincide.
+export function titleMatchesBusinessName(title: string | null, businessName: string): boolean {
+  if (!title) return false
+  const tokens = nameTokens(businessName)
+  if (tokens.length === 0) return false
+  const titleTokens = new Set(nameTokens(title))
+  return tokens.every((token) => titleTokens.has(token))
+}
+
+const STREET_TYPE_PREFIX_RE =
+  /^(avenida|av\.?|calle|c\.|boulevard|blvd\.?|bulevar|calzada|calz\.?|prolongacion|prol\.?|cerrada|privada|andador|circuito|eje)\s+/
+
+// Calle y número de la dirección de Google: "Av. Álvaro Obregón 308" →
+// { street: "alvaro obregon", number: "308" }. null si no hay número.
+export function parseStreetAddress(
+  formattedAddress: string | null
+): { street: string; number: string } | null {
+  if (!formattedAddress) return null
+  const first = normalize(formattedAddress.split(',')[0] ?? '').trim()
+  const match = first.match(/^(.+?)\s+(?:#|no\.?\s*|num\.?\s*)?(\d+[a-z]?)(?:\s+(?:int|interior|local|piso|depto)\b.*)?$/)
+  if (!match) return null
+  const street = match[1].replace(STREET_TYPE_PREFIX_RE, '').trim()
+  if (street.length < 3) return null
+  return { street, number: match[2] }
+}
+
+// La dirección "está" en el sitio si aparece la calle Y el número del negocio
+// según Google (con o sin tipo de vialidad, "#" o "No."). Una dirección de otra
+// calle u otro número no cuenta. Si Google no trae calle con número, se usa el
+// detector genérico del scraper.
+export function siteShowsBusinessAddress(
+  formattedAddress: string | null,
+  scrape: WebsiteScrape | null
+): boolean {
+  if (!scrape) return false
+  const parsed = parseStreetAddress(formattedAddress)
+  if (!parsed) return scrape.addressLikelyPresent
+  const text = normalize(scrape.visibleText)
+  const street = escapeRegExp(parsed.street).replace(/\s+/g, '\\s+')
+  const re = new RegExp(
+    `(^|[^a-z0-9])${street}[\\s,]+(?:#\\s*|no\\.?\\s*|num\\.?\\s*)?${escapeRegExp(parsed.number)}($|[^a-z0-9])`
+  )
+  return re.test(text)
 }
 
 function deriveKeywords(name: string, categories: string[] | null): string[] {
@@ -97,7 +178,7 @@ export function scoreSeo(
       group: 'Título (H1)',
       weight: 2,
       checkable: true,
-      pass: containsAny(h1Joined, zoneTerms),
+      pass: containsWholeWord(h1Joined, zoneTerms),
     },
     {
       key: 'h1_includes_keywords',
@@ -142,7 +223,7 @@ export function scoreSeo(
       group: 'Metadatos',
       weight: 2,
       checkable: true,
-      pass: containsAny(scrape?.metaDescription ?? null, zoneTerms),
+      pass: containsWholeWord(scrape?.metaDescription ?? null, zoneTerms),
     },
     {
       key: 'meta_description_keywords',
@@ -208,7 +289,7 @@ export function scoreSeo(
       group: 'Metadatos',
       weight: 3,
       checkable: true,
-      pass: containsAny(scrape?.title ?? null, [details.name]),
+      pass: titleMatchesBusinessName(scrape?.title ?? null, details.name),
     },
     {
       key: 'title_includes_zone',
@@ -219,7 +300,7 @@ export function scoreSeo(
       group: 'Metadatos',
       weight: 3,
       checkable: true,
-      pass: containsAny(scrape?.title ?? null, zoneTerms),
+      pass: containsWholeWord(scrape?.title ?? null, zoneTerms),
     },
     {
       key: 'title_includes_keywords',
@@ -243,7 +324,8 @@ export function scoreSeo(
 export function scoreGuestExperience(
   details: PlaceDetails,
   scrape: WebsiteScrape | null,
-  mobilePerformanceScore: number | null
+  mobilePerformanceScore: number | null,
+  pageSpeedError: string | null = null
 ): { score: number; maxScore: number; issues: ScoredIssue[] } {
   const keywords = deriveKeywords(details.name, details.types)
   const bodyTextProxy = scrape ? `${scrape.title ?? ''} ${scrape.metaDescription ?? ''}` : null
@@ -263,10 +345,10 @@ export function scoreGuestExperience(
     },
     {
       key: 'order_cta_clear',
-      label: 'Tiene un CTA claro para ordenar en línea',
+      label: 'Tiene un CTA claro para ordenar o reservar en línea',
       problem:
-        'No tienes un botón (CTA) claro para ordenar en línea: el cliente llega con ganas y no encuentra cómo — se va.',
-      why: 'Un llamado a la acción claro para ordenar puede aumentar significativamente tus conversiones.',
+        'No tienes un botón (CTA) claro para ordenar o reservar en línea: el cliente llega con ganas y no encuentra cómo — se va.',
+      why: 'Un llamado a la acción claro para ordenar o reservar puede aumentar significativamente tus conversiones.',
       group: 'Contenido',
       weight: 3,
       checkable: true,
@@ -336,7 +418,7 @@ export function scoreGuestExperience(
       group: 'Contenido',
       weight: 3,
       checkable: true,
-      pass: Boolean(scrape?.addressLikelyPresent),
+      pass: siteShowsBusinessAddress(details.formatted_address, scrape),
     },
     {
       key: 'content_keywords',
@@ -402,17 +484,35 @@ export function scoreGuestExperience(
       checkable: true,
       pass: Boolean(scrape?.orderBenefitsCopyLikelyPresent),
     },
-    {
-      key: 'page_speed',
-      label: 'Sitio rápido (velocidad de carga móvil)',
-      problem:
-        'Tu sitio carga lento en el celular: muchos se van antes de ver tu menú (la mayoría entra desde el teléfono).',
-      why: 'Un sitio lento hace que los visitantes se vayan antes de ver tu menú, sobre todo desde el celular.',
-      group: 'Usabilidad',
-      weight: 3,
-      checkable: true,
-      pass: mobilePerformanceScore !== null && mobilePerformanceScore >= 50,
-    },
+    // Sin medición no se afirma que el sitio sea lento: pass = null, el texto
+    // dice que no se midió y por qué, y el punto no se otorga.
+    mobilePerformanceScore === null
+      ? {
+          key: 'page_speed',
+          label: 'Sitio rápido (velocidad de carga móvil)',
+          problem:
+            'No pudimos medir la velocidad de tu sitio en celular (Google PageSpeed no respondió): este punto queda sin calificar en este reporte.',
+          why: 'Un sitio lento hace que los visitantes se vayan antes de ver tu menú, sobre todo desde el celular.',
+          group: 'Usabilidad',
+          weight: 3,
+          checkable: true,
+          pass: null,
+          measured: false,
+          measurement_error: pageSpeedError ?? 'Sin resultado de PageSpeed.',
+        }
+      : {
+          key: 'page_speed',
+          label: 'Sitio rápido (velocidad de carga móvil)',
+          problem:
+            'Tu sitio carga lento en el celular: muchos se van antes de ver tu menú (la mayoría entra desde el teléfono).',
+          why: 'Un sitio lento hace que los visitantes se vayan antes de ver tu menú, sobre todo desde el celular.',
+          group: 'Usabilidad',
+          weight: 3,
+          checkable: true,
+          pass: mobilePerformanceScore >= 50,
+          measured: true,
+          measured_value: mobilePerformanceScore,
+        },
     {
       key: 'mobile_optimized',
       label: 'Optimizado para móvil',

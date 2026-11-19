@@ -14,12 +14,30 @@ const FAQ_KEYWORDS = ['preguntas frecuentes', 'faq']
 const ORDER_CTA_KEYWORDS = [
   'ordenar',
   'pedir',
-  'reservar',
   'orden en línea',
   'orden en linea',
   'delivery',
   'domicilio',
 ]
+
+// Un CTA de reserva cuenta cuando el texto invita a reservar (cualquier forma
+// del verbo: "Reserva ya", "Reservar", "Reserva tu mesa", "Book a table") Y el
+// enlace lleva a un flujo de reserva. Sólo el texto no basta: "Reserva" que
+// lleva a /nosotros no es un botón para reservar.
+const RESERVATION_TEXT_RE =
+  /(^|[^a-z])(reserv(a|ar|e|en|as|aci[oó]n|aciones|ame|anos)|book( a| your)? table|book now|reserve)([^a-z]|$)/i
+const RESERVATION_HREF_RE =
+  /reserv|booking|\/book\b|opentable\.|resy\.com|sevenrooms\.|covermanager\.|eveve\.|calendly\.com|thefork\.|wa\.me\/|api\.whatsapp\.com\/send/i
+
+export function isReservationCta(text: string, href: string): boolean {
+  return RESERVATION_TEXT_RE.test(text) && RESERVATION_HREF_RE.test(href)
+}
+
+// Respaldo para cuando Google no trae calle y número: palabras de tipo de
+// vialidad o colonia como palabra completa ("Av." incluido — antes `\bav\.\b`
+// nunca coincidía porque después del punto viene un espacio).
+const GENERIC_ADDRESS_RE =
+  /(^|[\s,(])(calle|avenida|av\.|boulevard|blvd\.?|colonia|col\.|c\.p\.|cp\s?\d{5})(?=[\s,.)]|$)/i
 const ORDER_BENEFITS_KEYWORDS = [
   'sin comisiones',
   'ordena directo',
@@ -55,8 +73,11 @@ export type WebsiteScrape = {
   hasTwitterCard: boolean
   faviconPresent: boolean
   totalImages: number
+  /** Imágenes SIN atributo alt. alt="" es decorativa a propósito (WCAG/Lighthouse) y no cuenta. */
   imagesMissingAlt: number
   visibleTextLength: number
+  /** Texto visible del body, sin scripts/estilos, espacios colapsados. */
+  visibleText: string
   socialLinks: string[]
   hasPhoneLink: boolean
   addressLikelyPresent: boolean
@@ -87,7 +108,7 @@ export async function scrapeWebsite(url: string): Promise<WebsiteScrape> {
   const normalizedBodyText = bodyText.replace(/\s+/g, ' ').trim()
 
   const images = $('img')
-  const imagesMissingAlt = images.filter((_, el) => !$(el).attr('alt')?.trim()).length
+  const imagesMissingAlt = images.filter((_, el) => $(el).attr('alt') === undefined).length
 
   const anchors = $('a[href]')
   const socialLinks: string[] = []
@@ -108,7 +129,7 @@ export async function scrapeWebsite(url: string): Promise<WebsiteScrape> {
       socialLinks.push(href)
     }
 
-    const isOrderLink = textIncludesAny(text, ORDER_CTA_KEYWORDS)
+    const isOrderLink = textIncludesAny(text, ORDER_CTA_KEYWORDS) || isReservationCta(text, href)
     const isThirdPartyOrderingLink = THIRD_PARTY_ORDERING_HOSTS.some((host) =>
       lowerHref.includes(host)
     )
@@ -143,10 +164,8 @@ export async function scrapeWebsite(url: string): Promise<WebsiteScrape> {
     visibleTextLength: normalizedBodyText.length,
     socialLinks: Array.from(new Set(socialLinks)),
     hasPhoneLink,
-    addressLikelyPresent:
-      /\b(calle|avenida|av\.|boulevard|blvd|colonia|col\.|c\.p\.|cp\s?\d{5})\b/i.test(
-        normalizedBodyText
-      ),
+    visibleText: normalizedBodyText,
+    addressLikelyPresent: GENERIC_ADDRESS_RE.test(normalizedBodyText),
     openingHoursLikelyPresent: textIncludesAny(normalizedBodyText, WEEKDAY_KEYWORDS),
     orderCtaPresent,
     orderCtaOnlyExternal: orderCtaHasExternalLink && !orderCtaHasOwnDomainLink,
